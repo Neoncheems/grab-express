@@ -3,1210 +3,657 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chạy Grab Simulator - Xe Ôm Công Nghệ</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Chạy Grab Simulator - GPS Map Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        grab: {
-                            50: '#e6f7ed',
-                            100: '#ceefdb',
-                            500: '#00b14f',
-                            600: '#009743',
-                            700: '#007a36',
-                            800: '#00612b',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Google Fonts: Be Vietnam Pro -->
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Be Vietnam Pro', sans-serif;
-            background-color: #0f172a;
-            touch-action: manipulation;
-            user-select: none;
-        }
-
-        /* Pulse animations for ride alerts */
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 177, 79, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(0, 177, 79, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 177, 79, 0); }
-        }
-
-        .ring-pulse {
-            animation: pulse-ring 1.5s infinite;
-        }
-
-        /* Hide scrollbars for app-like UX */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Progress animation smooth transition */
-        .progress-bar-fill {
-            transition: width 0.2s linear;
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700;800&display=swap');
+        body { font-family: 'Lexend', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .grab-bg { background-color: #00b14f; }
+        .grab-text { color: #00b14f; }
+        .pulse-btn { animation: pulse 1.5s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 177, 79, 0.7); }
+            70% { transform: scale(1.03); box-shadow: 0 0 0 10px rgba(0, 177, 79, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 177, 79, 0); }
         }
     </style>
 </head>
-<body class="h-screen w-screen overflow-hidden flex items-center justify-center p-0 sm:p-3">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 md:p-4">
 
-    <div id="app-container" class="w-full h-full sm:max-w-md sm:h-[94vh] bg-slate-900 text-slate-100 sm:rounded-3xl shadow-2xl flex flex-col relative overflow-hidden border-0 sm:border-4 border-grab-600/40">
-
-        <!-- Top Navigation & Stats Header -->
-        <header class="bg-slate-800/90 backdrop-blur-md p-3 border-b border-slate-700/80 shrink-0 z-20">
-            <!-- Day & Clock Status Bar -->
-            <div class="flex justify-between items-center mb-2 px-1">
-                <div class="flex items-center gap-1.5 bg-grab-500/20 text-grab-500 font-extrabold text-xs px-2.5 py-1 rounded-full border border-grab-500/30">
-                    <span>📅</span>
-                    <span id="stat-day">NGÀY 1</span>
+    <div class="w-full max-w-md bg-slate-900 h-screen md:h-[840px] md:rounded-3xl shadow-2xl flex flex-col relative overflow-hidden border border-slate-800">
+        
+        <!-- HEADER TRẠNG THÁI -->
+        <header class="grab-bg text-white p-3 pt-4 shadow-lg z-20 shrink-0">
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-motorcycle text-xl"></i>
+                    <div>
+                        <h1 class="font-extrabold text-sm leading-tight">Grab Driver GPS</h1>
+                        <p id="weather-text" class="text-[10px] text-green-100"><i class="fa-solid fa-sun mr-1"></i>Trời nắng đẹp</p>
+                    </div>
                 </div>
-                <div class="flex items-center gap-1 bg-amber-500/20 text-amber-400 font-extrabold text-xs px-2.5 py-1 rounded-full border border-amber-500/30">
-                    <span>⏰</span>
-                    <span id="stat-clock">06:00</span>
-                </div>
-                <div class="flex items-center gap-1 bg-yellow-500/20 text-yellow-300 font-bold text-xs px-2.5 py-1 rounded-full border border-yellow-500/30">
-                    <span>⭐</span>
-                    <span id="stat-rating">5.0</span>
+                <div class="text-right">
+                    <span id="day-badge" class="bg-black/20 text-[10px] px-2 py-0.5 rounded-full font-bold">Ngày 1</span>
+                    <p id="time-clock" class="text-lg font-black mt-0.5 tracking-wider">06:00</p>
                 </div>
             </div>
 
-            <!-- Resource Stats Grid -->
-            <div class="grid grid-cols-3 gap-1.5 text-center">
-                <!-- Money -->
-                <div class="bg-slate-900/80 p-1.5 rounded-xl border border-slate-700 flex flex-col items-center">
-                    <span class="text-[10px] text-slate-400 uppercase font-bold">Ví Grab</span>
-                    <span id="stat-money" class="text-xs sm:text-sm font-black text-emerald-400">500.000 đ</span>
+            <!-- CHỈ SỐ VÍ / XĂNG / SỨC KHỎE -->
+            <div class="grid grid-cols-4 gap-1.5 bg-black/20 backdrop-blur-md p-2 rounded-xl text-center text-xs">
+                <div>
+                    <span class="text-green-200 block text-[9px] uppercase font-semibold">Ví Grab</span>
+                    <strong id="money-val" class="text-xs font-bold text-yellow-300">200k</strong>
                 </div>
-
-                <!-- Fuel Meter -->
-                <div class="bg-slate-900/80 p-1.5 rounded-xl border border-slate-700 flex flex-col justify-center px-2">
-                    <div class="flex justify-between text-[10px] mb-1 font-bold">
-                        <span class="text-slate-400">⛽ XĂNG</span>
-                        <span id="stat-fuel-text" class="text-amber-400">100%</span>
-                    </div>
-                    <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                        <div id="stat-fuel-bar" class="h-full bg-amber-400 transition-all duration-300 w-full"></div>
-                    </div>
+                <div>
+                    <span class="text-green-200 block text-[9px] uppercase font-semibold">Xăng</span>
+                    <strong id="fuel-val" class="text-xs font-bold text-white">100%</strong>
                 </div>
-
-                <!-- Health Bar -->
-                <div class="bg-slate-900/80 p-1.5 rounded-xl border border-slate-700 flex flex-col justify-center px-2">
-                    <div class="flex justify-between text-[10px] mb-1 font-bold">
-                        <span class="text-slate-400">💪 SỨC KHỎE</span>
-                        <span id="stat-health-text" class="text-rose-400">100%</span>
-                    </div>
-                    <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                        <div id="stat-health-bar" class="h-full bg-rose-500 transition-all duration-300 w-full"></div>
-                    </div>
+                <div>
+                    <span class="text-green-200 block text-[9px] uppercase font-semibold">Sức khỏe</span>
+                    <strong id="health-val" class="text-xs font-bold text-white">100%</strong>
+                </div>
+                <div>
+                    <span class="text-green-200 block text-[9px] uppercase font-semibold">Đánh giá</span>
+                    <strong id="rating-val" class="text-xs font-bold text-yellow-300">5.0 ⭐</strong>
                 </div>
             </div>
         </header>
 
-        <!-- Main Content Area (Tabs View) -->
-        <main class="flex-1 overflow-y-auto no-scrollbar relative p-3 bg-slate-950">
+        <!-- TOAST THÔNG BÁO -->
+        <div id="toast-box" class="hidden absolute top-28 left-4 right-4 z-50 bg-slate-800/95 text-white p-3 rounded-xl shadow-2xl border border-slate-700 text-xs flex items-center space-x-2">
+            <i class="fa-solid fa-circle-info text-yellow-400 text-base"></i>
+            <span id="toast-msg">Thông báo...</span>
+        </div>
+
+        <!-- CONTAINER NỘI DUNG CHÍNH -->
+        <div class="flex-1 relative overflow-hidden flex flex-col">
             
-            <!-- TAB 1: NHẬN CUỐC (MAIN APP SCREEN) -->
-            <section id="tab-rides" class="space-y-4">
-                <!-- Online Toggle Card -->
-                <div class="bg-slate-800/80 rounded-2xl p-4 border border-slate-700 flex items-center justify-between shadow-lg">
-                    <div class="flex items-center gap-3">
-                        <div id="status-dot" class="w-4 h-4 rounded-full bg-slate-500 shadow-md"></div>
-                        <div>
-                            <div id="status-title" class="font-extrabold text-sm text-slate-300">Đang Ngoại Tuyến</div>
-                            <div class="text-[11px] text-slate-400">Bật App để nhận cuốc xe ngay</div>
+            <!-- TAB 1: BẢN ĐỒ GPS (MAIN GAMEPLAY) -->
+            <main id="tab-map" class="flex-1 relative flex flex-col">
+                <!-- CANVAS BẢN ĐỒ -->
+                <div class="flex-1 w-full h-full relative">
+                    <canvas id="gpsCanvas" class="w-full h-full block bg-slate-800"></canvas>
+
+                    <!-- NÚT BẬT/TẮT APP KHÔNG CÓ ĐƠN -->
+                    <div id="app-toggle-box" class="absolute top-3 left-3 right-3 flex justify-between items-center bg-slate-900/90 backdrop-blur-md p-2.5 rounded-xl border border-slate-700/80 shadow-lg z-10">
+                        <div class="flex items-center space-x-2">
+                            <span id="status-dot" class="w-3 h-3 rounded-full bg-red-500"></span>
+                            <span id="status-text" class="text-xs font-bold text-slate-300">Đang Ngoại Tuyến</span>
                         </div>
+                        <button id="btn-toggle-app" onclick="toggleAppStatus()" class="px-4 py-1.5 bg-green-600 text-white rounded-lg text-xs font-bold shadow-md">BẬT APP</button>
                     </div>
-                    <button id="btn-toggle-online" onclick="toggleOnlineStatus()" class="px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider bg-grab-500 hover:bg-grab-600 text-white shadow-lg active:scale-95 transition">
-                        Bật App
-                    </button>
                 </div>
 
-                <!-- Active Ride Running View (Hidden by default) -->
-                <div id="active-ride-card" class="hidden bg-slate-800 border-2 border-grab-500 rounded-2xl p-4 shadow-xl space-y-3">
-                    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-                        <span id="ride-type-badge" class="px-2.5 py-0.5 rounded-md bg-grab-500/20 text-grab-400 font-black text-xs">
-                            GrabBike
-                        </span>
-                        <span id="ride-speed-text" class="text-xs font-bold text-slate-400">💨 40 km/h</span>
+                <!-- KHU VỰC THẺ CUỐC XE BÊN DƯỚI -->
+                <div class="p-3 bg-slate-900 border-t border-slate-800 shrink-0 z-10">
+                    
+                    <!-- 1. Trạng thái Đang Chờ Đơn -->
+                    <div id="card-idle" class="text-center py-2 space-y-1">
+                        <p class="text-xs text-slate-400"><i class="fa-solid fa-radar animate-spin mr-1"></i> Bật App và chạy xe quanh phố để nhận đơn...</p>
                     </div>
 
-                    <div class="flex items-center gap-3">
-                        <div id="ride-icon" class="text-3xl p-2 bg-slate-700 rounded-xl">🛵</div>
-                        <div class="flex-1">
-                            <div id="ride-customer-name" class="font-black text-sm text-slate-100">Khách Hàng</div>
-                            <div id="ride-details-text" class="text-xs text-slate-400">Quãng đường: 3.5 km • Cước: 35.000đ</div>
+                    <!-- 2. Thẻ Đơn Hàng Mới Tới -->
+                    <div id="card-offer" class="hidden space-y-2">
+                        <div class="flex justify-between items-start">
+                            <span id="offer-type" class="bg-green-500/20 text-green-400 text-[10px] font-bold px-2 py-0.5 rounded border border-green-500/30">GrabBike</span>
+                            <span id="offer-price" class="text-base font-extrabold text-green-400">35.000đ</span>
+                        </div>
+                        <div class="text-xs space-y-1">
+                            <p class="text-slate-300 font-bold" id="offer-customer">Khách: Nguyễn Văn A (4.9★)</p>
+                            <p class="text-[11px] text-slate-400 italic" id="offer-note">"Chạy cẩn thận giúp em!"</p>
+                            <p class="text-[11px] text-slate-300"><i class="fa-solid fa-circle text-green-500 mr-1"></i> <span id="offer-from">Điểm A</span></p>
+                            <p class="text-[11px] text-slate-300"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i> <span id="offer-to">Điểm B</span></p>
+                        </div>
+                        <div class="flex space-x-2 pt-1">
+                            <button onclick="declineRide()" class="w-1/3 py-2 bg-slate-800 text-slate-300 rounded-lg text-xs font-bold">Bỏ qua</button>
+                            <button onclick="acceptRide()" class="w-2/3 py-2 grab-bg text-white rounded-lg text-xs font-bold shadow-md pulse-btn">CHẤP NHẬN CUỐC</button>
                         </div>
                     </div>
 
-                    <!-- Progress Bar -->
+                    <!-- 3. Thẻ Đang Đón Khách (Giai đoạn 1) -->
+                    <div id="card-pickup" class="hidden space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-yellow-400 font-bold"><i class="fa-solid fa-location-arrow animate-bounce mr-1"></i> ĐANG TỚI ĐIỂM ĐÓN</span>
+                            <span id="pickup-dist" class="text-slate-400">0.8 km</span>
+                        </div>
+                        <p class="text-xs text-slate-200 font-medium">Lái xe tới điểm đón màu xanh lá trên bản đồ...</p>
+                        <button id="btn-arrived-pickup" onclick="arrivedAtPickup()" class="w-full py-2.5 bg-yellow-500 text-slate-950 font-extrabold rounded-lg text-xs shadow-md">ĐÃ TỚI ĐIỂM ĐÓN / LẤY HÀNG</button>
+                    </div>
+
+                    <!-- 4. Thẻ Đang Chở Khách (Giai đoạn 2) -->
+                    <div id="card-dropoff" class="hidden space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-green-400 font-bold"><i class="fa-solid fa-flag-checkered mr-1"></i> ĐANG CHỞ KHÁCH ĐẾN ĐIỂM TRẢ</span>
+                            <span id="dropoff-dist" class="text-slate-400">2.5 km</span>
+                        </div>
+                        <p class="text-xs text-slate-200 font-medium">Lái xe tới điểm trả màu đỏ trên bản đồ...</p>
+                        <button id="btn-complete-trip" onclick="completeRide()" class="w-full py-2.5 grab-bg text-white font-extrabold rounded-lg text-xs shadow-md">HOÀN THÀNH CUỐC XE</button>
+                    </div>
+
+                </div>
+            </main>
+
+            <!-- TAB 2: CỬA HÀNG -->
+            <main id="tab-shop" class="flex-1 p-4 hidden space-y-3 overflow-y-auto">
+                <h2 class="font-bold text-sm text-slate-200 border-b border-slate-800 pb-2"><i class="fa-solid fa-store grab-text mr-1.5"></i> Trạm Xăng & Dịch Vụ</h2>
+                
+                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 flex justify-between items-center">
                     <div>
-                        <div class="flex justify-between text-xs font-bold mb-1">
-                            <span class="text-slate-400">Tiến trình cuốc xe</span>
-                            <span id="ride-progress-text" class="text-grab-400">0%</span>
-                        </div>
-                        <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden p-0.5 border border-slate-700">
-                            <div id="ride-progress-bar" class="h-full bg-grab-500 rounded-full w-0 progress-bar-fill"></div>
-                        </div>
+                        <strong class="text-xs text-slate-200 block">Đổ Đầy Bình Xăng</strong>
+                        <span class="text-[10px] text-slate-400">Nạp lại 100% nhiên liệu</span>
                     </div>
+                    <button onclick="buyFuel()" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold">30.000đ</button>
                 </div>
 
-                <!-- Incoming Ride Offer Card (Hidden by default) -->
-                <div id="incoming-offer-card" class="hidden bg-gradient-to-b from-slate-800 to-slate-850 border-2 border-amber-400/80 ring-pulse rounded-2xl p-4 shadow-2xl space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="px-2.5 py-1 rounded-md bg-amber-400/20 text-amber-300 font-extrabold text-xs flex items-center gap-1">
-                            ⚡ NỔ CUỐC MỚI!
-                        </span>
-                        <span id="offer-countdown" class="text-xs font-black text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded">
-                            Hết hạn: 5s
-                        </span>
-                    </div>
-
-                    <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700 space-y-1.5">
-                        <div class="flex justify-between font-bold text-sm">
-                            <span id="offer-type" class="text-grab-400">🛵 GrabBike</span>
-                            <span id="offer-fare" class="text-emerald-400 font-black">45.000 đ</span>
-                        </div>
-                        <div id="offer-customer" class="text-xs text-slate-300 font-medium">Khách: Anh Tuấn (Vội vàng)</div>
-                        <div id="offer-route" class="text-xs text-slate-400">📍 Quãng đường: 4.2 km</div>
-                        <div id="offer-note" class="text-[11px] text-amber-300/90 italic bg-amber-500/10 p-1.5 rounded">"Giao gấp giùm em anh ơi!"</div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2 pt-1">
-                        <button onclick="declineOffer()" class="py-2.5 rounded-xl font-bold text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 active:scale-95 transition">
-                            Bỏ qua (-1 sao)
-                        </button>
-                        <button onclick="acceptOffer()" class="py-2.5 rounded-xl font-black text-xs bg-grab-500 hover:bg-grab-600 text-white shadow-lg shadow-grab-500/30 active:scale-95 transition">
-                            NHẬN CUỐC
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Idle Screen Indicator -->
-                <div id="idle-status-view" class="py-12 text-center space-y-3">
-                    <div class="text-6xl animate-bounce">🛵</div>
-                    <div class="text-slate-400 text-xs font-medium max-w-[220px] mx-auto">
-                        Hãy bấm <span class="text-grab-400 font-bold">"Bật App"</span> để bắt đầu nhận cuốc và kiếm tiền nào tài xế!
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 2: TRẠM XĂNG & ĂN UỐNG -->
-            <section id="tab-gas" class="hidden space-y-4">
-                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 space-y-3">
-                    <div class="flex items-center gap-2 border-b border-slate-700 pb-2">
-                        <span class="text-2xl">⛽</span>
-                        <div>
-                            <h2 class="font-black text-sm text-amber-400 uppercase">Trạm Xăng Petrolimex</h2>
-                            <p class="text-[11px] text-slate-400">Nạp nhiên liệu đầy bình để không chết máy giữa đường</p>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="refuel(30)" class="bg-slate-900 hover:bg-slate-700 border border-slate-700 p-3 rounded-xl text-left transition active:scale-95">
-                            <div class="text-xs font-bold text-slate-200">Đổ 30% Xăng</div>
-                            <div class="text-xs text-emerald-400 font-black mt-1">30.000 đ</div>
-                        </button>
-                        <button onclick="refuel(100)" class="bg-slate-900 hover:bg-slate-700 border border-amber-500/40 p-3 rounded-xl text-left transition active:scale-95">
-                            <div class="text-xs font-bold text-amber-300">Đầy Bình (100%)</div>
-                            <div id="gas-full-price" class="text-xs text-emerald-400 font-black mt-1">-- đ</div>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 space-y-3">
-                    <div class="flex items-center gap-2 border-b border-slate-700 pb-2">
-                        <span class="text-2xl">🍚</span>
-                        <div>
-                            <h2 class="font-black text-sm text-rose-400 uppercase">Quán Cơm Bình Dân</h2>
-                            <p class="text-[11px] text-slate-400">Hồi phục sức khỏe để tiếp tục cày cuốc</p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2">
-                        <button onclick="eatFood('bread')" class="w-full bg-slate-900 hover:bg-slate-700 border border-slate-700 p-3 rounded-xl flex justify-between items-center transition active:scale-95">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">🥖</span>
-                                <div class="text-left">
-                                    <div class="text-xs font-bold text-slate-200">Bánh Mì Sài Gòn</div>
-                                    <div class="text-[10px] text-rose-400 font-bold">+20% Sức Khỏe</div>
-                                </div>
-                            </div>
-                            <span class="text-xs text-emerald-400 font-black">20.000 đ</span>
-                        </button>
-
-                        <button onclick="eatFood('rice')" class="w-full bg-slate-900 hover:bg-slate-700 border border-slate-700 p-3 rounded-xl flex justify-between items-center transition active:scale-95">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">🍛</span>
-                                <div class="text-left">
-                                    <div class="text-xs font-bold text-slate-200">Cơm Tấm Sườn Bì Chả</div>
-                                    <div class="text-[10px] text-rose-400 font-bold">+50% Sức Khỏe</div>
-                                </div>
-                            </div>
-                            <span class="text-xs text-emerald-400 font-black">45.000 đ</span>
-                        </button>
-
-                        <button onclick="eatFood('pho')" class="w-full bg-slate-900 hover:bg-slate-700 border border-slate-700 p-3 rounded-xl flex justify-between items-center transition active:scale-95">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">🍜</span>
-                                <div class="text-left">
-                                    <div class="text-xs font-bold text-slate-200">Phở Tái Nạm Đặc Biệt</div>
-                                    <div class="text-[10px] text-rose-400 font-bold">+100% Sức Khỏe</div>
-                                </div>
-                            </div>
-                            <span class="text-xs text-emerald-400 font-black">75.000 đ</span>
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 3: GARA & SHOP XE -->
-            <section id="tab-garage" class="hidden space-y-4">
-                <!-- Vehicle Upgrade list -->
-                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 space-y-3">
-                    <div class="flex items-center gap-2 border-b border-slate-700 pb-2">
-                        <span class="text-2xl">🏎️</span>
-                        <div>
-                            <h2 class="font-black text-sm text-grab-400 uppercase">Cửa Hàng Mua Xe</h2>
-                            <p class="text-[11px] text-slate-400">Xe xịn giúp chạy nhanh hơn & tăng điểm đánh giá</p>
-                        </div>
-                    </div>
-
-                    <div id="vehicle-shop-list" class="space-y-2">
-                        <!-- Populated dynamically via JS -->
-                    </div>
-                </div>
-
-                <!-- Maintenance & Gear -->
-                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 space-y-3">
-                    <div class="flex items-center gap-2 border-b border-slate-700 pb-2">
-                        <span class="text-2xl">🎒</span>
-                        <div>
-                            <h2 class="font-black text-sm text-amber-400 uppercase">Trang Bị & Bảo Dưỡng</h2>
-                            <p class="text-[11px] text-slate-400">Nâng cấp tiện ích để phục vụ khách tốt nhất</p>
-                        </div>
-                    </div>
-
-                    <div id="gear-shop-list" class="space-y-2">
-                        <!-- Populated dynamically via JS -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 4: ĐÁNH GIÁ & KHÁCH HÀNG -->
-            <section id="tab-reviews" class="hidden space-y-3">
-                <div class="bg-slate-800 rounded-2xl p-3 border border-slate-700 flex justify-between items-center">
+                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 flex justify-between items-center">
                     <div>
-                        <div class="text-xs text-slate-400 font-bold">ĐÁNH GIÁ TRUNG BÌNH</div>
-                        <div class="text-2xl font-black text-amber-400 flex items-center gap-1">
-                            <span id="reviews-avg-rating">5.0</span> <span>⭐</span>
-                        </div>
+                        <strong class="text-xs text-slate-200 block">Nước Tăng Lực & Cơm Tấm</strong>
+                        <span class="text-[10px] text-slate-400">Hồi phục sức khỏe tài xế</span>
                     </div>
-                    <div class="text-right">
-                        <div class="text-xs text-slate-400 font-bold">TỔNG LỜI KHEN</div>
-                        <div id="reviews-count" class="text-lg font-black text-emerald-400">0 lượt</div>
-                    </div>
+                    <button onclick="buyHealth()" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold">25.000đ</button>
                 </div>
 
-                <div id="reviews-feed" class="space-y-2">
-                    <!-- Dynamic review items go here -->
-                </div>
-            </section>
-
-            <!-- TAB 5: THỐNG KÊ & SAO LƯU DỮ LIỆU -->
-            <section id="tab-stats" class="hidden space-y-4">
-                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 space-y-3">
-                    <h2 class="font-black text-sm text-grab-400 uppercase border-b border-slate-700 pb-2">🎯 Mục Tiêu Game: Mua Ô Tô GrabCar</h2>
-                    
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-xs font-bold">
-                            <span class="text-slate-400">Tiến độ tài sản (200 Tr + Xe Ô tô):</span>
-                            <span id="goal-progress-percent" class="text-grab-400">0%</span>
-                        </div>
-                        <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden p-0.5 border border-slate-700">
-                            <div id="goal-progress-bar" class="h-full bg-grab-500 rounded-full w-0 transition-all duration-500"></div>
-                        </div>
+                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 flex justify-between items-center">
+                    <div>
+                        <strong class="text-xs text-slate-200 block">Đăng Ký GrabFood & Express</strong>
+                        <span class="text-[10px] text-slate-400">Mở khóa cuốc giao hàng & đồ ăn</span>
                     </div>
+                    <button id="btn-unlock-food" onclick="unlockFood()" class="px-3 py-1.5 grab-bg text-white rounded-lg text-xs font-bold">300.000đ</button>
                 </div>
+            </main>
 
-                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 space-y-3">
-                    <h2 class="font-black text-sm text-slate-200 uppercase border-b border-slate-700 pb-2">📊 Báo Cáo Sự Nghiệp</h2>
+            <!-- TAB 3: GARA XE -->
+            <main id="tab-garage" class="flex-1 p-4 hidden space-y-3 overflow-y-auto">
+                <h2 class="font-bold text-sm text-slate-200 border-b border-slate-800 pb-2"><i class="fa-solid fa-wrench grab-text mr-1.5"></i> Sửa Chữa & Nâng Cấp Xe</h2>
 
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div class="bg-slate-900 p-2.5 rounded-xl">
-                            <div class="text-slate-400 font-bold">Tổng cuốc hoàn thành</div>
-                            <div id="stat-total-rides" class="text-lg font-black text-emerald-400">0</div>
-                        </div>
-                        <div class="bg-slate-900 p-2.5 rounded-xl">
-                            <div class="text-slate-400 font-bold">Tổng doanh thu</div>
-                            <div id="stat-total-earned" class="text-lg font-black text-emerald-400">0 đ</div>
-                        </div>
-                        <div class="bg-slate-900 p-2.5 rounded-xl">
-                            <div class="text-slate-400 font-bold">Tổng tiền Tip nhận được</div>
-                            <div id="stat-total-tips" class="text-lg font-black text-amber-400">0 đ</div>
-                        </div>
-                        <div class="bg-slate-900 p-2.5 rounded-xl">
-                            <div class="text-slate-400 font-bold">Xe đang sở hữu</div>
-                            <div id="stat-current-vehicle" class="text-xs font-black text-grab-400 truncate mt-1">Wave Cùi</div>
-                        </div>
+                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 flex justify-between items-center">
+                    <div>
+                        <strong class="text-xs text-slate-200 block">Bảo Dưỡng & Sửa Xe</strong>
+                        <span class="text-[10px] text-slate-400">Khôi phục độ bền xe về 100%</span>
                     </div>
+                    <button onclick="repairBike()" class="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-bold">50.000đ</button>
                 </div>
 
-                <!-- SAVE & BACKUP MANAGEMENT SECTION -->
-                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 space-y-3">
-                    <h2 class="font-black text-sm text-amber-400 uppercase border-b border-slate-700 pb-2">💾 Sao Lưu & Khôi Phục Dữ Liệu</h2>
-                    <p class="text-[11px] text-slate-400">Game tự động lưu trên máy. Bạn có thể xuất mã sao lưu để chuyển sang máy khác hoặc cất giữ an toàn.</p>
-                    
-                    <div class="grid grid-cols-2 gap-2 pt-1">
-                        <button onclick="exportSaveCode()" class="py-2.5 bg-grab-500 hover:bg-grab-600 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center gap-1">
-                            <span>📤</span> Xuất Mã Lưu
-                        </button>
-                        <button onclick="importSaveCode()" class="py-2.5 bg-slate-700 hover:bg-slate-600 text-amber-300 font-bold text-xs rounded-xl border border-slate-600 transition flex items-center justify-center gap-1">
-                            <span>📥</span> Nhập Mã Lưu
-                        </button>
+                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 flex justify-between items-center">
+                    <div>
+                        <strong class="text-xs text-slate-200 block">Nâng cấp Winner X / Exciter</strong>
+                        <span class="text-[10px] text-slate-400">Tăng 35% tốc độ chạy xe</span>
                     </div>
-
-                    <button onclick="resetGameData()" class="w-full mt-2 py-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/30 font-bold text-xs rounded-xl transition">
-                        🗑️ Chơi Lại Từ Đầu (Xóa Dữ Liệu)
-                    </button>
+                    <button onclick="upgradeBike('Winner X', 2500000, 1.35)" class="px-3 py-1.5 grab-bg text-white rounded-lg text-xs font-bold">2.500.000đ</button>
                 </div>
-            </section>
-        </main>
+            </main>
 
-        <!-- Bottom Tab Navigation -->
-        <nav class="bg-slate-800 border-t border-slate-700 grid grid-cols-5 text-center shrink-0 z-20">
-            <button onclick="switchTab('rides')" id="nav-rides" class="py-2.5 flex flex-col items-center gap-0.5 text-grab-500 font-bold transition">
-                <span class="text-lg">🛵</span>
-                <span class="text-[10px]">Chạy Cuốc</span>
+            <!-- TAB 4: SAO LƯU DỮ LIỆU -->
+            <main id="tab-save" class="flex-1 p-4 hidden space-y-3 overflow-y-auto">
+                <h2 class="font-bold text-sm text-slate-200 border-b border-slate-800 pb-2"><i class="fa-solid fa-floppy-disk grab-text mr-1.5"></i> Quản Lý Dữ Liệu</h2>
+
+                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 space-y-2">
+                    <strong class="text-xs text-slate-200 block">1. Xuất Mã Sao Lưu (Export)</strong>
+                    <textarea id="export-textarea" class="w-full text-[10px] p-2 bg-slate-900 border border-slate-700 rounded text-slate-300 font-mono h-16" readonly></textarea>
+                    <button onclick="copySaveCode()" class="w-full py-1.5 grab-bg text-white rounded text-xs font-bold"><i class="fa-solid fa-copy mr-1"></i> Copy Mã Sao Lưu</button>
+                </div>
+
+                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 space-y-2">
+                    <strong class="text-xs text-slate-200 block">2. Nhập Mã Khôi Phục (Import)</strong>
+                    <textarea id="import-textarea" class="w-full text-[10px] p-2 bg-slate-900 border border-slate-700 rounded text-slate-300 font-mono h-16" placeholder="Dán mã sao lưu vào đây..."></textarea>
+                    <button onclick="importSaveCode()" class="w-full py-1.5 bg-blue-600 text-white rounded text-xs font-bold"><i class="fa-solid fa-upload mr-1"></i> Khôi Phục Dữ Liệu</button>
+                </div>
+
+                <button onclick="resetData()" class="w-full py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-xl text-xs font-bold mt-4"><i class="fa-solid fa-trash mr-1"></i> Xóa Dữ Liệu & Chơi Lại Từ Đầu</button>
+            </main>
+
+        </div>
+
+        <!-- BOTTOM NAV BAR FIXED -->
+        <nav class="bg-slate-900 border-t border-slate-800 flex justify-around py-2.5 px-2 shrink-0 z-30">
+            <button onclick="switchTab('map')" id="nav-map" class="flex flex-col items-center grab-text text-[11px] font-bold">
+                <i class="fa-solid fa-map-location-dot text-base mb-0.5"></i>
+                <span>Bản đồ</span>
             </button>
-            <button onclick="switchTab('gas')" id="nav-gas" class="py-2.5 flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-200 font-bold transition">
-                <span class="text-lg">⛽</span>
-                <span class="text-[10px]">Trạm Xăng</span>
+            <button onclick="switchTab('shop')" id="nav-shop" class="flex flex-col items-center text-slate-400 text-[11px] font-bold hover:text-slate-200">
+                <i class="fa-solid fa-store text-base mb-0.5"></i>
+                <span>Cửa hàng</span>
             </button>
-            <button onclick="switchTab('garage')" id="nav-garage" class="py-2.5 flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-200 font-bold transition">
-                <span class="text-lg">🛠️</span>
-                <span class="text-[10px]">Gara & Shop</span>
+            <button onclick="switchTab('garage')" id="nav-garage" class="flex flex-col items-center text-slate-400 text-[11px] font-bold hover:text-slate-200">
+                <i class="fa-solid fa-wrench text-base mb-0.5"></i>
+                <span>Gara</span>
             </button>
-            <button onclick="switchTab('reviews')" id="nav-reviews" class="py-2.5 flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-200 font-bold transition">
-                <span class="text-lg">💬</span>
-                <span class="text-[10px]">Đánh Giá</span>
-            </button>
-            <button onclick="switchTab('stats')" id="nav-stats" class="py-2.5 flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-200 font-bold transition">
-                <span class="text-lg">📊</span>
-                <span class="text-[10px]">Thống Kê</span>
+            <button onclick="switchTab('save')" id="nav-save" class="flex flex-col items-center text-slate-400 text-[11px] font-bold hover:text-slate-200">
+                <i class="fa-solid fa-floppy-disk text-base mb-0.5"></i>
+                <span>Sao lưu</span>
             </button>
         </nav>
-
-        <!-- MODAL 1: Mid-Ride Random Event -->
-        <div id="modal-event" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="bg-slate-800 border-2 border-amber-400/80 rounded-3xl p-5 max-w-xs w-full text-center space-y-4 shadow-2xl animate-pop">
-                <div id="event-icon" class="text-5xl">🚧</div>
-                <h3 id="event-title" class="font-black text-base text-amber-300">Kẹt Xe Tắc Đường!</h3>
-                <p id="event-desc" class="text-xs text-slate-300">Đoạn đường Ngã tư Hàng Xanh kẹt cứng ngắc, bạn xử lý sao?</p>
-                <div id="event-choices" class="space-y-2 pt-2">
-                    <!-- Choices injected by JS -->
-                </div>
-            </div>
-        </div>
-
-        <!-- MODAL 2: End of Day Summary -->
-        <div id="modal-summary" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-            <div class="bg-slate-800 border-2 border-grab-500 rounded-3xl p-5 max-w-xs w-full text-center space-y-4 shadow-2xl">
-                <div class="text-4xl">🌙</div>
-                <h2 class="font-black text-lg text-grab-400 uppercase">TỔNG KẾT NGÀY <span id="summary-day-num">1</span></h2>
-                
-                <div class="bg-slate-900 p-3 rounded-2xl border border-slate-700 space-y-2 text-xs text-left">
-                    <div class="flex justify-between"><span class="text-slate-400">Tổng doanh thu cuốc:</span> <span id="sum-revenue" class="font-bold text-emerald-400">+0 đ</span></div>
-                    <div class="flex justify-between"><span class="text-slate-400">Tiền Tip từ khách:</span> <span id="sum-tips" class="font-bold text-amber-300">+0 đ</span></div>
-                    <div class="flex justify-between"><span class="text-slate-400">Chiết khấu App (-20%):</span> <span id="sum-fee" class="font-bold text-rose-400">-0 đ</span></div>
-                    <hr class="border-slate-700">
-                    <div class="flex justify-between text-sm font-black"><span class="text-slate-200">LÃI RÒNG TRONG NGÀY:</span> <span id="sum-net" class="text-grab-400">0 đ</span></div>
-                </div>
-
-                <button onclick="startNextDay()" class="w-full py-3 bg-grab-500 hover:bg-grab-600 text-white font-black text-xs uppercase rounded-xl shadow-lg shadow-grab-500/30 transition">
-                    Nghỉ Ngơi & Sang Ngày Mới
-                </button>
-            </div>
-        </div>
-
-        <!-- MODAL 3: Toast Notification Popup -->
-        <div id="toast-notify" class="hidden absolute top-16 left-1/2 -translate-x-1/2 bg-slate-800 border border-grab-500 text-slate-100 px-4 py-2 rounded-full text-xs font-bold shadow-2xl z-50 flex items-center gap-2">
-            <span id="toast-icon">✨</span>
-            <span id="toast-text">Thông báo game</span>
-        </div>
 
     </div>
 
     <script>
-        /* Web Audio API Sound Synthesizer */
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        function playSound(type) {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            try {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                if (type === 'click') {
-                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-                } else if (type === 'ride-alert') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.15);
-                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-                } else if (type === 'cash') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(987, audioCtx.currentTime);
-                    osc.frequency.setValueAtTime(1318, audioCtx.currentTime + 0.08);
-                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-                } else if (type === 'event') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.25);
-                }
-            } catch (e) { console.log(e); }
-        }
-
-        // Vehicles Catalog
-        const VEHICLES = [
-            { id: 'wave', name: 'Wave Cùi', price: 0, speedMult: 1.0, fuelConsumption: 1.0, tipBonus: 0, reqRating: 0, icon: '🛵' },
-            { id: 'exciter', name: 'Exciter 150', price: 15000000, speedMult: 1.25, fuelConsumption: 0.9, tipBonus: 0.1, reqRating: 4.0, icon: '🏍️' },
-            { id: 'feliz', name: 'VinFast Feliz (Xe điện)', price: 35000000, speedMult: 1.35, fuelConsumption: 0.5, tipBonus: 0.2, reqRating: 4.2, icon: '⚡' },
-            { id: 'sh', name: 'Honda SH 125i', price: 90000000, speedMult: 1.5, fuelConsumption: 0.8, tipBonus: 0.35, reqRating: 4.5, icon: '🛵' },
-            { id: 'grabcar', name: 'Ô Tô VinFast VF8 (GrabCar)', price: 200000000, speedMult: 1.8, fuelConsumption: 1.2, tipBonus: 0.5, reqRating: 4.8, icon: '🚗' }
-        ];
-
-        // Gear Upgrades Catalog
-        const GEARS = [
-            { id: 'raincoat', name: 'Áo Mưa Đôi Xịn', price: 300000, desc: 'Giúp đi mưa không bị giảm điểm khách', icon: '🌧️' },
-            { id: 'foodbox', name: 'Thùng Keep-Warm GrabFood', price: 800000, desc: 'Tăng 25% tiền Tip cho cuốc đồ ăn', icon: '📦' },
-            { id: 'helmet', name: 'Nón Bảo Hiểm Thơm Tho', price: 250000, desc: 'Khách thích thú, tăng tỉ lệ đánh giá 5 sao', icon: '🪖' },
-            { id: 'charger', name: 'Sạc Điện Thoại Dự Phòng', price: 400000, desc: 'Tăng tốc độ nổ cuốc thêm 30%', icon: '🔋' }
-        ];
-
-        // Random Events Pool
-        const RANDOM_EVENTS = [
-            {
-                title: 'Kẹt Xe Ngã Tư Hàng Xanh!',
-                desc: 'Đường kẹt cứng nhích từng chút một. Bạn xử lý sao?',
-                icon: '🚧',
-                choices: [
-                    { text: 'Chạy Leo Lề Đường', effect: () => { handleEventResult(-5, -5, -0.1, 'Leo lề nhanh nhưng bị công an dòm ngó (-5% Xăng/SK)'); } },
-                    { text: 'Kiên Nhẫn Nhích Từng Bước', effect: () => { handleEventResult(0, -10, 0.1, 'Chờ lâu tí nhưng khách khen đi an toàn (+0.1 Sao)'); } },
-                    { text: 'Luồn Lách Vào Hẻm Tắt', effect: () => { handleEventResult(-2, -3, 0, 'Thành công vượt qua kẹt xe an toàn!'); } }
-                ]
-            },
-            {
-                title: 'Cảnh Sát Giao Thông Vẫy Vào!',
-                desc: 'Hình như bạn quên bật xi nhan quẹo?',
-                icon: '👮‍♂️',
-                choices: [
-                    { text: 'Tỏ Ra Lịch Sự Xoè Giấy Tờ', effect: () => { handleEventResult(0, 0, 0, 'Chú CSGT nhắc nhở nhẹ nhàng rồi cho đi!'); } },
-                    { text: 'Xin Xỏ Nạn Nỉ Hoàn Cảnh', effect: () => { handleEventResult(-50000, 0, 0, 'Mất 50k tiền phạt hành chính!'); } }
-                ]
-            },
-            {
-                title: 'Cơn Mưa Rào Bất Chợt!',
-                desc: 'Trời bỗng đổ mưa như trút nước.',
-                icon: '🌧️',
-                choices: [
-                    { text: 'Dừng Lại Mặc Áo Mưa Cho Khách', effect: () => { handleEventResult(0, -5, 0.2, 'Khách siêu cảm động, cho 5 sao liền!'); } },
-                    { text: 'Lướt Tiếp Tìm Trú Mưa', effect: () => { handleEventResult(0, -10, -0.2, 'Khách bị ướt nhẹ, hơi nhăn nhó (-0.2 Sao)'); } }
-                ]
-            },
-            {
-                title: 'Khách Bắt Chuyện Tám Chuyện',
-                desc: 'Khách hỏi: "Chú chạy Grab vậy một tháng kiếm được bao nhiêu?"',
-                icon: '💬',
-                choices: [
-                    { text: 'Vui Vẻ "Chém Gió" Hăng Say', effect: () => { handleEventResult(0, 0, 0.1, 'Hai bên nói chuyện hợp cạ, nhận thêm Tip!'); gameState.todayTips += 15000; } },
-                    { text: 'Chỉ Cười Trả Lời Qua Loa', effect: () => { handleEventResult(0, 0, 0, 'Chuyến đi diễn ra bình thường.'); } }
-                ]
-            }
-        ];
-
-        let gameState = {
-            day: 1,
-            timeMinutes: 6 * 60,
-            money: 500000,
+        // --- GAME STATE ---
+        let state = {
+            money: 200000,
             fuel: 100,
             health: 100,
             rating: 5.0,
-            ratingHistory: [5.0, 5.0, 5.0],
-            isOnline: false,
-            currentVehicle: 'wave',
-            ownedVehicles: ['wave'],
-            ownedGears: [],
-            
-            activeRide: null,
-            incomingOffer: null,
-            offerTimer: null,
-            rideInterval: null,
-
-            totalRides: 0,
-            totalEarned: 0,
-            totalTips: 0,
-            todayRevenue: 0,
-            todayTips: 0,
-            reviews: []
+            ratingsCount: 1,
+            day: 1,
+            timeHour: 6,
+            timeMinute: 0,
+            bikeName: 'Wave Alpha',
+            speedMultiplier: 1.0,
+            hasFoodLicense: false,
+            appActive: false
         };
 
-        function switchTab(tabId) {
-            playSound('click');
-            ['rides', 'gas', 'garage', 'reviews', 'stats'].forEach(id => {
-                document.getElementById(`tab-${id}`).classList.add('hidden');
-                document.getElementById(`nav-${id}`).className = "py-2.5 flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-200 font-bold transition";
-            });
-
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            document.getElementById(`nav-${tabId}`).className = "py-2.5 flex flex-col items-center gap-0.5 text-grab-500 font-bold transition";
-
-            if (tabId === 'garage') renderGarage();
-            if (tabId === 'reviews') renderReviews();
-            if (tabId === 'stats') renderStats();
-        }
-
-        function updateUI() {
-            document.getElementById('stat-day').innerText = `NGÀY ${gameState.day}`;
-            
-            const hours = Math.floor(gameState.timeMinutes / 60).toString().padStart(2, '0');
-            const mins = (gameState.timeMinutes % 60).toString().padStart(2, '0');
-            document.getElementById('stat-clock').innerText = `${hours}:${mins}`;
-
-            document.getElementById('stat-money').innerText = `${gameState.money.toLocaleString('vi-VN')} đ`;
-            document.getElementById('stat-rating').innerText = gameState.rating.toFixed(1);
-
-            document.getElementById('stat-fuel-text').innerText = `${Math.round(gameState.fuel)}%`;
-            document.getElementById('stat-fuel-bar').style.width = `${Math.max(0, gameState.fuel)}%`;
-
-            document.getElementById('stat-health-text').innerText = `${Math.round(gameState.health)}%`;
-            document.getElementById('stat-health-bar').style.width = `${Math.max(0, gameState.health)}%`;
-
-            const missingFuel = 100 - gameState.fuel;
-            const fullGasCost = Math.round(missingFuel * 1000);
-            document.getElementById('gas-full-price').innerText = `${fullGasCost.toLocaleString('vi-VN')} đ`;
-
-            const goalMoney = 200000000;
-            const progress = Math.min(100, (gameState.money / goalMoney) * 100);
-            document.getElementById('goal-progress-bar').style.width = `${progress}%`;
-            document.getElementById('goal-progress-percent').innerText = `${progress.toFixed(1)}%`;
-
-            saveGame();
-        }
-
-        function showToast(text, icon = '✨') {
-            const toast = document.getElementById('toast-notify');
-            document.getElementById('toast-text').innerText = text;
-            document.getElementById('toast-icon').innerText = icon;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 2500);
-        }
-
-        function toggleOnlineStatus() {
-            playSound('click');
-            if (gameState.health <= 10) {
-                showToast('Bạn quá mệt mỏi! Hãy ăn cơm nghỉ ngơi.', '⚠️️');
-                return;
-            }
-            if (gameState.fuel <= 0) {
-                showToast('Hết xăng rồi! Hãy ghé trạm xăng.', '⛽');
-                return;
-            }
-
-            gameState.isOnline = !gameState.isOnline;
-            const btn = document.getElementById('btn-toggle-online');
-            const dot = document.getElementById('status-dot');
-            const title = document.getElementById('status-title');
-
-            if (gameState.isOnline) {
-                btn.innerText = 'Tắt App';
-                btn.className = "px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider bg-rose-500 hover:bg-rose-600 text-white shadow-lg active:scale-95 transition";
-                dot.className = "w-4 h-4 rounded-full bg-grab-500 animate-ping shadow-md";
-                title.innerText = 'Đang Sẵn Sàng Nhận Cuốc';
-                title.className = "font-extrabold text-sm text-grab-400";
-            } else {
-                btn.innerText = 'Bật App';
-                btn.className = "px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider bg-grab-500 hover:bg-grab-600 text-white shadow-lg active:scale-95 transition";
-                dot.className = "w-4 h-4 rounded-full bg-slate-500 shadow-md";
-                title.innerText = 'Đang Ngoại Tuyến';
-                title.className = "font-extrabold text-sm text-slate-300";
-                clearIncomingOffer();
-            }
-        }
-
-        function generateRideOffer() {
-            if (!gameState.isOnline || gameState.activeRide || gameState.incomingOffer) return;
-
-            const types = [
-                { name: 'GrabBike', icon: '🛵', baseFare: 15000, perKm: 6000 },
-                { name: 'GrabFood', icon: '🍜', baseFare: 20000, perKm: 5000 },
-                { name: 'GrabExpress', icon: '📦', baseFare: 25000, perKm: 7000 }
-            ];
-
-            const names = ['Anh Minh', 'Chị Ngọc', 'Chú Bảy', 'Cô Hồng', 'Bạn Hoàng', 'Em Linh', 'Bác Hùng'];
-            const notes = [
-                '"Giao gấp giùm em anh ơi!"',
-                '"Nhớ mang nón bảo hiểm sạch nha chú."',
-                '"Chạy cẩn thận giùm em, em hơi say xe."',
-                '"Đồ ăn nóng hổi nha anh shipper ơi!"',
-                '"Đang vội đi làm, xin anh tài chạy nhanh chút."'
-            ];
-
-            const vehicle = VEHICLES.find(v => v.id === gameState.currentVehicle);
-            const isGrabCar = vehicle.id === 'grabcar';
-
-            let type = types[Math.floor(Math.random() * types.length)];
-            if (isGrabCar) {
-                type = { name: 'GrabCar', icon: '🚗', baseFare: 50000, perKm: 14000 };
-            }
-
-            const dist = (Math.random() * 6 + 1.5).toFixed(1);
-            let fare = Math.round((type.baseFare + dist * type.perKm) / 1000) * 1000;
-
-            gameState.incomingOffer = {
-                type: type.name,
-                icon: type.icon,
-                customer: names[Math.floor(Math.random() * names.length)],
-                distance: parseFloat(dist),
-                fare: fare,
-                note: notes[Math.floor(Math.random() * notes.length)],
-                timeLeft: 5
-            };
-
-            playSound('ride-alert');
-            renderIncomingOffer();
-        }
-
-        function renderIncomingOffer() {
-            const offer = gameState.incomingOffer;
-            if (!offer) return;
-
-            document.getElementById('idle-status-view').classList.add('hidden');
-            const card = document.getElementById('incoming-offer-card');
-            card.classList.remove('hidden');
-
-            document.getElementById('offer-type').innerText = `${offer.icon} ${offer.type}`;
-            document.getElementById('offer-fare').innerText = `${offer.fare.toLocaleString('vi-VN')} đ`;
-            document.getElementById('offer-customer').innerText = `Khách: ${offer.customer}`;
-            document.getElementById('offer-route').innerText = `📍 Quãng đường: ${offer.distance} km`;
-            document.getElementById('offer-note').innerText = offer.note;
-
-            document.getElementById('offer-countdown').innerText = `Hết hạn: ${offer.timeLeft}s`;
-
-            clearInterval(gameState.offerTimer);
-            gameState.offerTimer = setInterval(() => {
-                offer.timeLeft--;
-                if (offer.timeLeft <= 0) {
-                    declineOffer();
-                } else {
-                    document.getElementById('offer-countdown').innerText = `Hết hạn: ${offer.timeLeft}s`;
-                }
-            }, 1000);
-        }
-
-        function declineOffer() {
-            playSound('click');
-            clearIncomingOffer();
-            gameState.rating = Math.max(1.0, gameState.rating - 0.05);
-            showToast('Đã bỏ qua cuốc xe (-0.05 Sao)', '❌');
-            updateUI();
-        }
-
-        function clearIncomingOffer() {
-            clearInterval(gameState.offerTimer);
-            gameState.incomingOffer = null;
-            document.getElementById('incoming-offer-card').classList.add('hidden');
-            if (!gameState.activeRide) {
-                document.getElementById('idle-status-view').classList.remove('hidden');
-            }
-        }
-
-        function acceptOffer() {
-            playSound('click');
-            if (!gameState.incomingOffer) return;
-
-            gameState.activeRide = { ...gameState.incomingOffer, progress: 0 };
-            clearIncomingOffer();
-
-            document.getElementById('idle-status-view').classList.add('hidden');
-            document.getElementById('active-ride-card').classList.remove('hidden');
-
-            const ride = gameState.activeRide;
-            document.getElementById('ride-type-badge').innerText = ride.type;
-            document.getElementById('ride-icon').innerText = ride.icon;
-            document.getElementById('ride-customer-name').innerText = `Chở: ${ride.customer}`;
-            document.getElementById('ride-details-text').innerText = `Quãng đường: ${ride.distance} km • Cước: ${ride.fare.toLocaleString('vi-VN')}đ`;
-
-            startRideLoop();
-        }
-
-        function startRideLoop() {
-            const vehicle = VEHICLES.find(v => v.id === gameState.currentVehicle);
-            const speed = 40 * vehicle.speedMult;
-            document.getElementById('ride-speed-text').innerText = `💨 ${Math.round(speed)} km/h`;
-
-            let eventTriggered = false;
-
-            gameState.rideInterval = setInterval(() => {
-                if (!gameState.activeRide) return;
-
-                gameState.activeRide.progress += 4 * vehicle.speedMult;
-                gameState.timeMinutes += 2;
-
-                gameState.fuel -= (0.4 * vehicle.fuelConsumption);
-                gameState.health -= 0.3;
-
-                if (!eventTriggered && gameState.activeRide.progress >= 40 && gameState.activeRide.progress <= 60) {
-                    if (Math.random() < 0.45) {
-                        eventTriggered = true;
-                        triggerRandomEvent();
-                    }
-                }
-
-                const p = Math.min(100, gameState.activeRide.progress);
-                document.getElementById('ride-progress-bar').style.width = `${p}%`;
-                document.getElementById('ride-progress-text').innerText = `${Math.round(p)}%`;
-
-                updateUI();
-
-                if (p >= 100) {
-                    completeRide();
-                }
-            }, 300);
-        }
-
-        function completeRide() {
-            clearInterval(gameState.rideInterval);
-            const ride = gameState.activeRide;
-            playSound('cash');
-
-            const vehicle = VEHICLES.find(v => v.id === gameState.currentVehicle);
-            
-            let tip = 0;
-            if (Math.random() < (0.3 + vehicle.tipBonus)) {
-                tip = Math.round((Math.random() * 15000 + 5000) / 1000) * 1000;
-            }
-
-            if (ride.type === 'GrabFood' && gameState.ownedGears.includes('foodbox')) {
-                tip += 10000;
-            }
-
-            const totalPay = ride.fare + tip;
-            gameState.money += totalPay;
-            gameState.todayRevenue += ride.fare;
-            gameState.todayTips += tip;
-            gameState.totalEarned += totalPay;
-            gameState.totalTips += tip;
-            gameState.totalRides++;
-
-            const starEarned = (Math.random() > 0.1) ? 5.0 : 4.0;
-            addReview(ride.customer, starEarned, tip);
-
-            showToast(`Hoàn thành! +${totalPay.toLocaleString('vi-VN')}đ (Tip: ${tip.toLocaleString('vi-VN')}đ)`, '🎉');
-
-            document.getElementById('active-ride-card').classList.add('hidden');
-            document.getElementById('idle-status-view').classList.remove('hidden');
-            gameState.activeRide = null;
-
-            checkDayEndConditions();
-        }
-
-        function triggerRandomEvent() {
-            clearInterval(gameState.rideInterval);
-            playSound('event');
-
-            const event = RANDOM_EVENTS[Math.floor(Math.random() * RANDOM_EVENTS.length)];
-            document.getElementById('event-icon').innerText = event.icon;
-            document.getElementById('event-title').innerText = event.title;
-            document.getElementById('event-desc').innerText = event.desc;
-
-            const choicesContainer = document.getElementById('event-choices');
-            choicesContainer.innerHTML = '';
-
-            event.choices.forEach(choice => {
-                const btn = document.createElement('button');
-                btn.className = "w-full py-2.5 px-3 bg-slate-700 hover:bg-slate-600 font-bold text-xs text-slate-200 rounded-xl transition text-left active:scale-95";
-                btn.innerText = `👉 ${choice.text}`;
-                btn.onclick = () => {
-                    document.getElementById('modal-event').classList.add('hidden');
-                    choice.effect();
-                    startRideLoop();
-                };
-                choicesContainer.appendChild(btn);
-            });
-
-            document.getElementById('modal-event').classList.remove('hidden');
-        }
-
-        function handleEventResult(fuelDelta, healthDelta, ratingDelta, message) {
-            gameState.fuel = Math.min(100, Math.max(0, gameState.fuel + fuelDelta));
-            gameState.health = Math.min(100, Math.max(0, gameState.health + healthDelta));
-            if (fuelDelta < 0 && typeof fuelDelta === 'number' && fuelDelta < -100) {
-                gameState.money += fuelDelta;
-            }
-            gameState.rating = Math.min(5.0, Math.max(1.0, gameState.rating + ratingDelta));
-            showToast(message, 'ℹ️');
-            updateUI();
-        }
-
-        function refuel(amount) {
-            playSound('click');
-            const missing = 100 - gameState.fuel;
-            if (missing <= 0) {
-                showToast('Bình xăng đã đầy rồi!', '⛽');
-                return;
-            }
-
-            let fillPercent = amount;
-            if (amount === 100) fillPercent = missing;
-
-            const cost = Math.round(fillPercent * 1000);
-            if (gameState.money < cost) {
-                showToast('Không đủ tiền đổ xăng!', '❌');
-                return;
-            }
-
-            gameState.money -= cost;
-            gameState.fuel = Math.min(100, gameState.fuel + fillPercent);
-            showToast(`Đã đổ ${Math.round(fillPercent)}% xăng (-${cost.toLocaleString('vi-VN')}đ)`, '⛽');
-            updateUI();
-        }
-
-        function eatFood(type) {
-            playSound('click');
-            const foods = {
-                bread: { name: 'Bánh Mì', hp: 20, cost: 20000 },
-                rice: { name: 'Cơm Tấm', hp: 50, cost: 45000 },
-                pho: { name: 'Phở Đặc Biệt', hp: 100, cost: 75000 }
-            };
-
-            const food = foods[type];
-            if (gameState.health >= 100) {
-                showToast('Sức khỏe đang hồi phục tối đa!', '💪');
-                return;
-            }
-
-            if (gameState.money < food.cost) {
-                showToast('Không đủ tiền ăn cơm!', '❌');
-                return;
-            }
-
-            gameState.money -= food.cost;
-            gameState.health = Math.min(100, gameState.health + food.hp);
-            showToast(`Đã ăn ${food.name} (+${food.hp}% Sức Khỏe)`, '🍲');
-            updateUI();
-        }
-
-        function renderGarage() {
-            const vehicleList = document.getElementById('vehicle-shop-list');
-            vehicleList.innerHTML = '';
-
-            VEHICLES.forEach(v => {
-                const isOwned = gameState.ownedVehicles.includes(v.id);
-                const isEquipped = gameState.currentVehicle === v.id;
-
-                const card = document.createElement('div');
-                card.className = `p-3 rounded-xl border flex items-center justify-between ${isEquipped ? 'bg-grab-500/10 border-grab-500' : 'bg-slate-900 border-slate-700'}`;
-                
-                card.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <span class="text-3xl">${v.icon}</span>
-                        <div>
-                            <div class="font-bold text-xs text-slate-100 flex items-center gap-1">
-                                ${v.name} ${isEquipped ? '<span class="text-[10px] bg-grab-500 text-white px-1.5 py-0.2 rounded">Đang dùng</span>' : ''}
-                            </div>
-                            <div class="text-[10px] text-slate-400">Tốc độ: +${Math.round((v.speedMult - 1) * 100)}% • Tỉ lệ Tip: +${v.tipBonus * 100}%</div>
-                        </div>
-                    </div>
-                    <div>
-                        ${isOwned ? 
-                            (!isEquipped ? `<button onclick="equipVehicle('${v.id}')" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-xs rounded-lg">Sử dụng</button>` : '') :
-                            `<button onclick="buyVehicle('${v.id}')" class="px-3 py-1.5 bg-grab-500 hover:bg-grab-600 text-white font-black text-xs rounded-lg">${v.price.toLocaleString('vi-VN')}đ</button>`
-                        }
-                    </div>
-                `;
-                vehicleList.appendChild(card);
-            });
-
-            const gearList = document.getElementById('gear-shop-list');
-            gearList.innerHTML = '';
-
-            GEARS.forEach(g => {
-                const isOwned = gameState.ownedGears.includes(g.id);
-
-                const card = document.createElement('div');
-                card.className = "p-3 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-between";
-                card.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <span class="text-2xl">${g.icon}</span>
-                        <div>
-                            <div class="font-bold text-xs text-slate-100">${g.name}</div>
-                            <div class="text-[10px] text-slate-400">${g.desc}</div>
-                        </div>
-                    </div>
-                    <div>
-                        ${isOwned ? 
-                            `<span class="text-xs text-emerald-400 font-bold">Đã sở hữu</span>` :
-                            `<button onclick="buyGear('${g.id}')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs rounded-lg">${g.price.toLocaleString('vi-VN')}đ</button>`
-                        }
-                    </div>
-                `;
-                gearList.appendChild(card);
-            });
-        }
-
-        function buyVehicle(id) {
-            playSound('click');
-            const vehicle = VEHICLES.find(v => v.id === id);
-            if (gameState.money < vehicle.price) {
-                showToast('Không đủ tiền mua xe!', '❌');
-                return;
-            }
-
-            gameState.money -= vehicle.price;
-            gameState.ownedVehicles.push(id);
-            gameState.currentVehicle = id;
-            showToast(`Đã mua ${vehicle.name}!`, '🎉');
-            renderGarage();
-            updateUI();
-            checkWinCondition();
-        }
-
-        function equipVehicle(id) {
-            playSound('click');
-            gameState.currentVehicle = id;
-            renderGarage();
-            updateUI();
-        }
-
-        function buyGear(id) {
-            playSound('click');
-            const gear = GEARS.find(g => g.id === id);
-            if (gameState.money < gear.price) {
-                showToast('Không đủ tiền mua trang bị!', '❌');
-                return;
-            }
-
-            gameState.money -= gear.price;
-            gameState.ownedGears.push(id);
-            showToast(`Đã mua ${gear.name}!`, '🎒');
-            renderGarage();
-            updateUI();
-        }
-
-        function addReview(customer, rating, tip) {
-            const comments5 = [
-                "Tài xế thân thiện, xe chạy rất êm!",
-                "Giao hàng nhanh như chớp, cho 5 sao!",
-                "Bác tài nói chuyện siêu hài hước, rất thích.",
-                "Chạy an toàn, chấp hành luật giao thông tốt."
-            ];
-            const comments4 = [
-                "Xe chạy nhanh nhưng hơi xóc chút.",
-                "Thái độ phục vụ tốt, sẽ ủng hộ tiếp."
-            ];
-
-            const comment = rating === 5 ? comments5[Math.floor(Math.random() * comments5.length)] : comments4[Math.floor(Math.random() * comments4.length)];
-
-            gameState.reviews.unshift({
-                customer,
-                rating,
-                comment,
-                tip,
-                time: `${Math.floor(gameState.timeMinutes / 60)}:${(gameState.timeMinutes % 60).toString().padStart(2, '0')}`
-            });
-
-            gameState.ratingHistory.push(rating);
-            if (gameState.ratingHistory.length > 20) gameState.ratingHistory.shift();
-            const avg = gameState.ratingHistory.reduce((a, b) => a + b, 0) / gameState.ratingHistory.length;
-            gameState.rating = Math.round(avg * 10) / 10;
-        }
-
-        function renderReviews() {
-            document.getElementById('reviews-avg-rating').innerText = gameState.rating.toFixed(1);
-            document.getElementById('reviews-count').innerText = `${gameState.reviews.length} lượt`;
-
-            const feed = document.getElementById('reviews-feed');
-            feed.innerHTML = '';
-
-            gameState.reviews.forEach(rev => {
-                const item = document.createElement('div');
-                item.className = "p-3 rounded-xl bg-slate-800 border border-slate-700 space-y-1";
-                item.innerHTML = `
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="font-bold text-slate-200">${rev.customer}</span>
-                        <span class="text-amber-400 font-bold">${'⭐'.repeat(rev.rating)}</span>
-                    </div>
-                    <div class="text-xs text-slate-300 italic">"${rev.comment}"</div>
-                    ${rev.tip > 0 ? `<div class="text-[10px] text-emerald-400 font-bold">💵 Đã Tip: +${rev.tip.toLocaleString('vi-VN')}đ</div>` : ''}
-                `;
-                feed.appendChild(item);
-            });
-        }
-
-        function renderStats() {
-            document.getElementById('stat-total-rides').innerText = gameState.totalRides;
-            document.getElementById('stat-total-earned').innerText = `${gameState.totalEarned.toLocaleString('vi-VN')} đ`;
-            document.getElementById('stat-total-tips').innerText = `${gameState.totalTips.toLocaleString('vi-VN')} đ`;
-
-            const vehicle = VEHICLES.find(v => v.id === gameState.currentVehicle);
-            document.getElementById('stat-current-vehicle').innerText = vehicle.name;
-        }
-
-        function checkDayEndConditions() {
-            if (gameState.timeMinutes >= 22 * 60 || gameState.health <= 0) {
-                triggerEndDay();
-            }
-        }
-
-        function triggerEndDay() {
-            if (gameState.isOnline) toggleOnlineStatus();
-
-            document.getElementById('summary-day-num').innerText = gameState.day;
-            document.getElementById('sum-revenue').innerText = `+${gameState.todayRevenue.toLocaleString('vi-VN')} đ`;
-            document.getElementById('sum-tips').innerText = `+${gameState.todayTips.toLocaleString('vi-VN')} đ`;
-
-            const appFee = Math.round(gameState.todayRevenue * 0.2);
-            document.getElementById('sum-fee').innerText = `-${appFee.toLocaleString('vi-VN')} đ`;
-
-            const netProfit = (gameState.todayRevenue - appFee) + gameState.todayTips;
-            document.getElementById('sum-net').innerText = `${netProfit.toLocaleString('vi-VN')} đ`;
-
-            document.getElementById('modal-summary').classList.remove('hidden');
-        }
-
-        function startNextDay() {
-            playSound('click');
-            document.getElementById('modal-summary').classList.add('hidden');
-
-            gameState.day++;
-            gameState.timeMinutes = 6 * 60;
-            gameState.health = 100;
-            gameState.todayRevenue = 0;
-            gameState.todayTips = 0;
-
-            showToast(`Chào ngày mới Ngày ${gameState.day}! Hãy mở app chạy cuốc nhé.`, '🌅');
-            updateUI();
-        }
-
-        function checkWinCondition() {
-            if (gameState.money >= 200000000 && gameState.ownedVehicles.includes('grabcar')) {
-                alert('🎉 CHÚC MỪNG TÀI XẾ XUẤT SẮC!\n\nBạn đã tích lũy được 200 Triệu Đồng và sở hữu chiếc Ô Tô GrabCar mơ ước! Bạn chính là Vua Chạy Grab!');
-            }
-        }
-
-        /* AUTO-SAVE & BACKUP SYSTEM */
-        function saveGame() {
+        // --- RIDE & MAP STATE ---
+        let currentRide = null;
+        let rideStage = 0; // 0: None, 1: Heading to Pickup A, 2: Heading to Dropoff B
+        let driverPos = { x: 200, y: 200 };
+        let targetPos = null;
+        let pickupPos = null;
+        let dropoffPos = null;
+
+        // Sound generator
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBeep(freq = 800, duration = 0.15) {
             try {
-                const saveObj = {
-                    day: gameState.day,
-                    timeMinutes: gameState.timeMinutes,
-                    money: gameState.money,
-                    fuel: gameState.fuel,
-                    health: gameState.health,
-                    rating: gameState.rating,
-                    ratingHistory: gameState.ratingHistory,
-                    currentVehicle: gameState.currentVehicle,
-                    ownedVehicles: gameState.ownedVehicles,
-                    ownedGears: gameState.ownedGears,
-                    totalRides: gameState.totalRides,
-                    totalEarned: gameState.totalEarned,
-                    totalTips: gameState.totalTips,
-                    todayRevenue: gameState.todayRevenue,
-                    todayTips: gameState.todayTips,
-                    reviews: gameState.reviews
-                };
-                localStorage.setItem('grab_sim_save', JSON.stringify(saveObj));
-            } catch (e) {}
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        // --- SAVE / LOAD SYSTEM ---
+        function saveGame() {
+            localStorage.setItem('grab_gps_save_v2', JSON.stringify(state));
+            updateExportTextarea();
         }
 
         function loadGame() {
-            try {
-                const saved = localStorage.getItem('grab_sim_save');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    gameState = { ...gameState, ...parsed };
-                    gameState.isOnline = false;
-                }
-            } catch (e) {}
+            const saved = localStorage.getItem('grab_gps_save_v2');
+            if (saved) {
+                try { state = Object.assign(state, JSON.parse(saved)); } catch(e){}
+            }
+            updateUI();
         }
 
-        function exportSaveCode() {
-            playSound('click');
-            saveGame();
-            const dataStr = localStorage.getItem('grab_sim_save');
-            if (!dataStr) return;
-            const encoded = btoa(encodeURIComponent(dataStr));
-            
-            navigator.clipboard.writeText(encoded).then(() => {
-                showToast('Đã sao chép Mã Lưu vào bộ nhớ tạm!', '📋');
-            }).catch(() => {
-                prompt('Mã lưu game của bạn (Hãy copy và cất kỹ):', encoded);
-            });
+        function updateExportTextarea() {
+            try {
+                const code = btoa(encodeURIComponent(JSON.stringify(state)));
+                document.getElementById('export-textarea').value = code;
+            } catch(e){}
+        }
+
+        function copySaveCode() {
+            const textarea = document.getElementById('export-textarea');
+            textarea.select();
+            document.execCommand('copy');
+            showToast('Đã sao chép mã lưu vào clipboard!');
         }
 
         function importSaveCode() {
-            playSound('click');
-            const code = prompt('Dán Mã Sao Lưu (Export Code) của bạn vào đây:');
-            if (!code) return;
-
+            const code = document.getElementById('import-textarea').value.trim();
+            if (!code) return showToast('Vui lòng dán mã khôi phục!');
             try {
-                const decoded = decodeURIComponent(atob(code.trim()));
-                const parsed = JSON.parse(decoded);
-                
-                if (parsed && typeof parsed.money === 'number') {
-                    localStorage.setItem('grab_sim_save', decoded);
-                    loadGame();
+                const str = decodeURIComponent(atob(code));
+                const parsed = JSON.parse(str);
+                if (parsed && parsed.money !== undefined) {
+                    state = parsed;
+                    saveGame();
                     updateUI();
-                    showToast('Khôi phục dữ liệu thành công!', '🎉');
-                } else {
-                    alert('Mã sao lưu không hợp lệ!');
+                    showToast('Khôi phục dữ liệu thành công!');
                 }
-            } catch (e) {
-                alert('Mã sao lưu bị lỗi hoặc không đúng định dạng!');
+            } catch(e) {
+                showToast('Mã sao lưu không hợp lệ!');
             }
         }
 
-        function resetGameData() {
-            if (confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu cày cuốc để chơi lại từ đầu?')) {
-                localStorage.removeItem('grab_sim_save');
+        function resetData() {
+            if (confirm('Bạn chắc chắn muốn xóa dữ liệu chơi lại từ đầu?')) {
+                localStorage.removeItem('grab_gps_save_v2');
                 location.reload();
             }
         }
 
-        window.onload = function() {
-            loadGame();
-            updateUI();
+        function showToast(msg) {
+            const toast = document.getElementById('toast-box');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
 
-            setInterval(() => {
-                if (gameState.isOnline && !gameState.incomingOffer && !gameState.activeRide) {
-                    const hasCharger = gameState.ownedGears.includes('charger');
-                    const chance = hasCharger ? 0.6 : 0.4;
-                    if (Math.random() < chance) {
-                        generateRideOffer();
-                    }
+        // --- UI UPDATER ---
+        function updateUI() {
+            document.getElementById('money-val').innerText = (state.money / 1000).toLocaleString() + 'k';
+            document.getElementById('fuel-val').innerText = Math.round(state.fuel) + '%';
+            document.getElementById('health-val').innerText = Math.round(state.health) + '%';
+            document.getElementById('rating-val').innerText = state.rating.toFixed(1) + ' ⭐';
+            document.getElementById('day-badge').innerText = `Ngày ${state.day}`;
+            document.getElementById('time-clock').innerText = 
+                `${String(state.timeHour).padStart(2,'0')}:${String(state.timeMinute).padStart(2,'0')}`;
+
+            if (state.hasFoodLicense) {
+                const btn = document.getElementById('btn-unlock-food');
+                if (btn) { btn.innerText = 'Đã Mở Khoá'; btn.disabled = true; btn.className = 'px-3 py-1.5 bg-slate-700 text-slate-400 rounded-lg text-xs font-bold'; }
+            }
+            updateExportTextarea();
+        }
+
+        // --- APP TOGGLE ---
+        function toggleAppStatus() {
+            state.appActive = !state.appActive;
+            const btn = document.getElementById('btn-toggle-app');
+            const dot = document.getElementById('status-dot');
+            const txt = document.getElementById('status-text');
+
+            if (state.appActive) {
+                btn.innerText = 'TẮT APP';
+                btn.className = 'px-4 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold shadow-md';
+                dot.className = 'w-3 h-3 rounded-full bg-green-500 animate-ping';
+                txt.innerText = 'Đang Trực Tuyến';
+                showToast('Đã bật App! Đang tìm cuốc xe...');
+            } else {
+                btn.innerText = 'BẬT APP';
+                btn.className = 'px-4 py-1.5 bg-green-600 text-white rounded-lg text-xs font-bold shadow-md';
+                dot.className = 'w-3 h-3 rounded-full bg-red-500';
+                txt.innerText = 'Đang Ngoại Tuyến';
+                if (currentRide && rideStage === 0) declineRide();
+            }
+        }
+
+        // --- RIDE GENERATOR & STAGES ---
+        function spawnRandomRide() {
+            if (!state.appActive || currentRide || state.fuel <= 5 || state.health <= 5) return;
+
+            const cvs = document.getElementById('gpsCanvas');
+            const w = cvs.width || 300;
+            const h = cvs.height || 400;
+
+            pickupPos = {
+                x: Math.floor(Math.random() * (w - 80)) + 40,
+                y: Math.floor(Math.random() * (h - 120)) + 60
+            };
+            dropoffPos = {
+                x: Math.floor(Math.random() * (w - 80)) + 40,
+                y: Math.floor(Math.random() * (h - 120)) + 60
+            };
+
+            const dx = dropoffPos.x - pickupPos.x;
+            const dy = dropoffPos.y - pickupPos.y;
+            const distKm = (Math.sqrt(dx*dx + dy*dy) / 40).toFixed(1);
+            const price = Math.round(distKm * 8000 + 15000);
+
+            const names = ['Lê Văn Nam', 'Trần Thị Mai', 'Nguyễn Quốc Bảo', 'Phạm Minh Anh'];
+            const notes = ['Chạy nhanh giúp em!', 'Có mang đồ cồng kềnh', 'Chạy êm em thưởng thêm'];
+
+            currentRide = {
+                type: state.hasFoodLicense && Math.random() > 0.5 ? 'GrabFood' : 'GrabBike',
+                price: price,
+                customer: names[Math.floor(Math.random() * names.length)],
+                note: notes[Math.floor(Math.random() * notes.length)],
+                dist: distKm
+            };
+
+            document.getElementById('card-idle').classList.add('hidden');
+            document.getElementById('card-offer').classList.remove('hidden');
+
+            document.getElementById('offer-type').innerText = currentRide.type;
+            document.getElementById('offer-price').innerText = currentRide.price.toLocaleString() + 'đ';
+            document.getElementById('offer-customer').innerText = `Khách: ${currentRide.customer}`;
+            document.getElementById('offer-note').innerText = `"${currentRide.note}"`;
+            document.getElementById('offer-from').innerText = `Điểm đón (A) - Tọa độ [${Math.round(pickupPos.x)}, ${Math.round(pickupPos.y)}]`;
+            document.getElementById('offer-to').innerText = `Điểm trả (B) - Quãng đường ${distKm} km`;
+
+            playBeep(900, 0.2);
+        }
+
+        function declineRide() {
+            currentRide = null;
+            pickupPos = null;
+            dropoffPos = null;
+            rideStage = 0;
+            document.getElementById('card-offer').classList.add('hidden');
+            document.getElementById('card-idle').classList.remove('hidden');
+        }
+
+        function acceptRide() {
+            if (!currentRide) return;
+            rideStage = 1; // Heading to A
+            targetPos = pickupPos;
+
+            document.getElementById('card-offer').classList.add('hidden');
+            document.getElementById('card-pickup').classList.remove('hidden');
+            showToast('Đã nhận đơn! Lái xe đến vị trí đón màu XANH LÁ.');
+            playBeep(1100, 0.15);
+        }
+
+        function arrivedAtPickup() {
+            if (rideStage !== 1) return;
+            rideStage = 2; // Heading to B
+            targetPos = dropoffPos;
+
+            document.getElementById('card-pickup').classList.add('hidden');
+            document.getElementById('card-dropoff').classList.remove('hidden');
+            showToast('Đã đón khách! Lái xe đến vị trí trả màu ĐỎ.');
+            playBeep(1200, 0.2);
+        }
+
+        function completeRide() {
+            if (rideStage !== 2 || !currentRide) return;
+
+            state.money += currentRide.price;
+            state.fuel = Math.max(0, state.fuel - currentRide.dist * 2.2);
+            state.health = Math.max(0, state.health - currentRide.dist * 1.5);
+            
+            const ratingAdd = (Math.random() * 0.8 + 4.2);
+            state.rating = ((state.rating * state.ratingsCount) + ratingAdd) / (state.ratingsCount + 1);
+            state.ratingsCount++;
+
+            showToast(`Hoàn thành! +${currentRide.price.toLocaleString()}đ (+${ratingAdd.toFixed(1)}⭐)`);
+            playBeep(700, 0.25);
+
+            declineRide();
+            saveGame();
+            updateUI();
+        }
+
+        // --- SHOP & GARAGE ACTIONS ---
+        function buyFuel() {
+            if (state.money < 30000) return showToast('Không đủ tiền!');
+            if (state.fuel >= 99) return showToast('Bình xăng đã đầy!');
+            state.money -= 30000;
+            state.fuel = 100;
+            saveGame(); updateUI();
+            showToast('Đã đổ đầy bình xăng!');
+        }
+
+        function buyHealth() {
+            if (state.money < 25000) return showToast('Không đủ tiền!');
+            if (state.health >= 99) return showToast('Sức khỏe đang rất tốt!');
+            state.money -= 25000;
+            state.health = 100;
+            saveGame(); updateUI();
+            showToast('Đã hồi phục sức khỏe!');
+        }
+
+        function unlockFood() {
+            if (state.money < 300000) return showToast('Cần 300.000đ để đăng ký!');
+            state.money -= 300000;
+            state.hasFoodLicense = true;
+            saveGame(); updateUI();
+            showToast('Đã đăng ký thành công GrabFood & Express!');
+        }
+
+        function repairBike() {
+            if (state.money < 50000) return showToast('Không đủ tiền!');
+            state.money -= 50000;
+            state.health = 100;
+            saveGame(); updateUI();
+            showToast('Đã bảo dưỡng xe thành công!');
+        }
+
+        function upgradeBike(name, price, speed) {
+            if (state.money < price) return showToast('Chưa đủ tiền nâng cấp!');
+            state.money -= price;
+            state.bikeName = name;
+            state.speedMultiplier = speed;
+            saveGame(); updateUI();
+            showToast(`Đã nâng cấp lên xe ${name}!`);
+        }
+
+        // --- TAB NAVIGATION ---
+        function switchTab(tab) {
+            ['map', 'shop', 'garage', 'save'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).className = 'flex flex-col items-center text-slate-400 text-[11px] font-bold hover:text-slate-200';
+            });
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            document.getElementById(`nav-${tab}`).className = 'flex flex-col items-center grab-text text-[11px] font-bold';
+        }
+
+        // --- GPS CANVAS RENDERER & TIME LOOP ---
+        function initCanvas() {
+            const cvs = document.getElementById('gpsCanvas');
+            const parent = cvs.parentElement;
+            cvs.width = parent.clientWidth;
+            cvs.height = parent.clientHeight;
+
+            driverPos = { x: cvs.width / 2, y: cvs.height / 2 };
+        }
+
+        function drawMap() {
+            const cvs = document.getElementById('gpsCanvas');
+            if (!cvs) return;
+            const ctx = cvs.getContext('2d');
+            const w = cvs.width;
+            const h = cvs.height;
+
+            // MÀU BẦU TRỜI & BẢN ĐỒ THEO GIỜ
+            let bgStyle = '#1e293b'; // Đêm / Mặc định
+            let roadColor = '#334155';
+            let gridColor = '#475569';
+
+            if (state.timeHour >= 6 && state.timeHour < 11) { // Sáng
+                bgStyle = '#0f172a'; roadColor = '#1e293b'; gridColor = '#334155';
+                document.getElementById('weather-text').innerHTML = '<i class="fa-solid fa-sun text-yellow-400 mr-1"></i>Nắng sớm nhẹ nhàng';
+            } else if (state.timeHour >= 11 && state.timeHour < 16) { // Trưa
+                bgStyle = '#0284c7'; roadColor = '#0369a1'; gridColor = '#38bdf8';
+                document.getElementById('weather-text').innerHTML = '<i class="fa-solid fa-sun text-yellow-300 mr-1"></i>Trời nắng gắt';
+            } else if (state.timeHour >= 16 && state.timeHour < 18) { // Hoàng hôn
+                bgStyle = '#7c2d12'; roadColor = '#9a3412'; gridColor = '#fb923c';
+                document.getElementById('weather-text').innerHTML = '<i class="fa-solid fa-cloud-sun text-orange-400 mr-1"></i>Chiều hoàng hôn';
+            } else { // Tối
+                bgStyle = '#090d16'; roadColor = '#111827'; gridColor = '#1f2937';
+                document.getElementById('weather-text').innerHTML = '<i class="fa-solid fa-moon text-blue-300 mr-1"></i>Đêm muộn mát mẻ';
+            }
+
+            ctx.fillStyle = bgStyle;
+            ctx.fillRect(0, 0, w, h);
+
+            // MẠNG LƯỚI ĐƯỜNG XÁ
+            ctx.strokeStyle = roadColor;
+            ctx.lineWidth = 14;
+            ctx.beginPath();
+            for (let x = 40; x < w; x += 80) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+            for (let y = 40; y < h; y += 80) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+            ctx.stroke();
+
+            // VẠCH KẺ ĐƯỜNG
+            ctx.strokeStyle = gridColor;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            for (let x = 40; x < w; x += 80) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+            for (let y = 40; y < h; y += 80) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // DI CHUYỂN TỰ ĐỘNG CỦA XE THEO MỤC TIÊU
+            if (targetPos) {
+                const dx = targetPos.x - driverPos.x;
+                const dy = targetPos.y - driverPos.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                const speed = 1.8 * state.speedMultiplier;
+
+                if (dist > speed) {
+                    driverPos.x += (dx / dist) * speed;
+                    driverPos.y += (dy / dist) * speed;
+                } else {
+                    driverPos.x = targetPos.x;
+                    driverPos.y = targetPos.y;
                 }
-            }, 3000);
+            }
+
+            // VẼ ĐƯỜNG ĐỊNH VỊ (ROUTE LINE)
+            if (rideStage === 1 && pickupPos) {
+                ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(driverPos.x, driverPos.y); ctx.lineTo(pickupPos.x, pickupPos.y); ctx.stroke();
+            } else if (rideStage === 2 && dropoffPos) {
+                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(driverPos.x, driverPos.y); ctx.lineTo(dropoffPos.x, dropoffPos.y); ctx.stroke();
+            }
+
+            // VẼ ĐIỂM ĐÓN (A) & ĐIỂM TRẢ (B)
+            if (pickupPos) {
+                ctx.fillStyle = '#22c55e';
+                ctx.beginPath(); ctx.arc(pickupPos.x, pickupPos.y, 10, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText('A', pickupPos.x, pickupPos.y + 3.5);
+            }
+
+            if (dropoffPos) {
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath(); ctx.arc(dropoffPos.x, dropoffPos.y, 10, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText('B', dropoffPos.x, dropoffPos.y + 3.5);
+            }
+
+            // VẼ XE GRAB CỦA TÀI XẾ
+            ctx.fillStyle = '#00b14f';
+            ctx.beginPath(); ctx.arc(driverPos.x, driverPos.y, 12, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = '#ffffff'; ctx.font = '10px FontAwesome'; ctx.textAlign = 'center';
+            ctx.fillText('🛵', driverPos.x, driverPos.y + 3.5);
+
+            requestAnimationFrame(drawMap);
+        }
+
+        // CLOCK LOOP
+        setInterval(() => {
+            // Khi đang chạy đơn thời gian trôi nhanh hơn
+            const addMins = (rideStage > 0) ? 3 : 1;
+            state.timeMinute += addMins;
+
+            if (state.timeMinute >= 60) {
+                state.timeHour += Math.floor(state.timeMinute / 60);
+                state.timeMinute %= 60;
+            }
+
+            if (state.timeHour >= 22) {
+                state.timeHour = 6;
+                state.day++;
+                showToast(`Nghỉ đêm! Bước sang Ngày ${state.day}`);
+            }
+
+            // Thử ngẫu nhiên phát cuốc
+            if (state.appActive && !currentRide && Math.random() < 0.3) {
+                spawnRandomRide();
+            }
+
+            updateUI();
+        }, 1200);
+
+        window.onload = () => {
+            initCanvas();
+            loadGame();
+            drawMap();
+            window.addEventListener('resize', initCanvas);
         };
     </script>
 </body>
