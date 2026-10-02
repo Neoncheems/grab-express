@@ -3,536 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tiệm Nail Xinh Simulator - Nail Salon Studio</title>
-    <!-- Tailwind CSS -->
+    <title>Đế Chế Tiệm Nail & Spa Simulator - POV Edition</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Lexend:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=Lexend:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Lexend', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
-        .pink-bg { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); }
+        .pink-grad { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); }
+        .gold-grad { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
         .pink-text { color: #ff477e; }
-        .card-pink { background: rgba(255, 240, 245, 0.9); border: 1px solid #ffccd5; }
-        .pulse-btn { animation: pulse 1.5s infinite; }
+        .pulse-btn { animation: pulse 1.6s infinite; }
         @keyframes pulse {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 71, 126, 0.6); }
-            70% { transform: scale(1.04); box-shadow: 0 0 0 10px rgba(255, 71, 126, 0); }
+            70% { transform: scale(1.03); box-shadow: 0 0 0 10px rgba(255, 71, 126, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 71, 126, 0); }
         }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #fda4af; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-rose-50 text-slate-800 min-h-screen flex items-center justify-center p-0 md:p-4">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 md:p-3">
 
-    <!-- CONTAINER CHÍNH -->
-    <div class="w-full max-w-md bg-white h-screen md:h-[860px] md:rounded-3xl shadow-2xl flex flex-col relative overflow-hidden border border-rose-200">
+    <!-- GAME CONTAINER -->
+    <div class="w-full max-w-md bg-slate-900 h-screen md:h-[880px] md:rounded-3xl shadow-2xl flex flex-col relative overflow-hidden border border-rose-900/40">
         
-        <!-- HEADER TIỆM NAIL -->
-        <header class="pink-bg text-white p-3.5 pt-4 shadow-lg z-30 shrink-0 relative">
-            <div class="flex justify-between items-center mb-2">
-                <div class="flex items-center space-x-2.5">
-                    <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-inner">
-                        <i class="fa-solid fa-hand-sparkles text-xl"></i>
+        <!-- HEADER TRẠNG THÁI CAO CẤP -->
+        <header class="pink-grad text-white p-3 pt-3.5 shadow-xl z-30 shrink-0 relative">
+            <div class="flex justify-between items-center mb-1.5">
+                <div class="flex items-center space-x-2">
+                    <div class="w-9 h-9 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-inner">
+                        <i class="fa-solid fa-gem text-lg"></i>
                     </div>
                     <div>
-                        <h1 class="font-extrabold text-base leading-tight tracking-wide font-['Comfortaa']">TIỆM NAIL XINH</h1>
-                        <p id="time-display" class="text-[11px] text-rose-100 font-medium">🕕 08:00 · Mở cửa phục vụ</p>
+                        <h1 id="shop-title-display" class="font-extrabold text-xs leading-tight tracking-wide font-['Comfortaa']">Nail Dạo Trả Nợ</h1>
+                        <p id="event-display" class="text-[10px] text-rose-100 font-medium"><i class="fa-solid fa-cloud-rain mr-1"></i>Trời mưa vắng khách</p>
                     </div>
                 </div>
                 <div class="text-right">
-                    <span id="day-badge" class="bg-black/20 text-[10px] px-2.5 py-1 rounded-full font-bold border border-white/20">Ngày 1</span>
-                    <p id="money-display" class="text-lg font-black mt-0.5 text-yellow-200">500.000đ</p>
+                    <span id="day-badge" class="bg-black/30 backdrop-blur-md text-[10px] px-2.5 py-0.5 rounded-full font-bold border border-white/20">Ngày 1 (Thứ 2)</span>
+                    <p id="money-display" class="text-base font-black mt-0.5 text-yellow-200">500.000đ</p>
                 </div>
             </div>
 
             <!-- DASHBOARD CHỈ SỐ -->
-            <div class="grid grid-cols-3 gap-2 bg-white/15 backdrop-blur-md p-2 rounded-2xl text-center text-xs border border-white/20">
+            <div class="grid grid-cols-4 gap-1.5 bg-black/25 backdrop-blur-md p-1.5 rounded-2xl text-center text-xs border border-white/10">
                 <div>
-                    <span class="text-rose-100 block text-[9px] uppercase font-bold">Uy tín Tiệm</span>
-                    <strong id="rating-display" class="text-xs font-black text-yellow-300">5.0 ⭐</strong>
+                    <span class="text-rose-100 block text-[8px] uppercase font-bold">Khoản Nợ</span>
+                    <strong id="debt-display" class="text-[11px] font-black text-rose-200">50Tr đ</strong>
                 </div>
                 <div>
-                    <span class="text-rose-100 block text-[9px] uppercase font-bold">Khách chờ</span>
-                    <strong id="queue-display" class="text-xs font-black text-white">0 người</strong>
+                    <span class="text-rose-100 block text-[8px] uppercase font-bold">Uy Tín Tiệm</span>
+                    <strong id="rating-display" class="text-[11px] font-black text-yellow-300">1.5 ⭐</strong>
                 </div>
                 <div>
-                    <span class="text-rose-100 block text-[9px] uppercase font-bold">Cấp độ Tiệm</span>
-                    <strong id="level-display" class="text-xs font-black text-white">Tiệm Nhỏ</strong>
+                    <span class="text-rose-100 block text-[8px] uppercase font-bold">Sức Khỏe</span>
+                    <strong id="health-display" class="text-[11px] font-black text-emerald-300">100%</strong>
+                </div>
+                <div>
+                    <span class="text-rose-100 block text-[8px] uppercase font-bold">Cấp Độ</span>
+                    <strong id="level-display" class="text-[11px] font-black text-cyan-200">Cấp 1</strong>
                 </div>
             </div>
         </header>
 
         <!-- TOAST THÔNG BÁO -->
-        <div id="toast" class="hidden absolute top-28 left-4 right-4 z-50 bg-slate-900/90 text-white p-3 rounded-2xl shadow-2xl border border-rose-400 text-xs flex items-center space-x-2.5 backdrop-blur-md">
-            <i class="fa-solid fa-heart text-rose-400 text-base"></i>
+        <div id="toast" class="hidden absolute top-28 left-4 right-4 z-50 bg-slate-900/95 text-white p-3 rounded-2xl shadow-2xl border border-rose-500/50 text-xs flex items-center space-x-2.5 backdrop-blur-md">
+            <i class="fa-solid fa-bell text-rose-400 text-base"></i>
             <span id="toast-msg" class="font-medium">Thông báo...</span>
         </div>
 
-        <!-- THẦN MÀN HÌNH CHÍNH -->
-        <div class="flex-1 relative overflow-hidden flex flex-col bg-rose-50/50">
+        <!-- POPUP SỰ CỐ / THỦ TỤC BAN ĐẦU / ĐÁNH GIÁ -->
+        <div id="modal-overlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div id="modal-content" class="bg-slate-900 border border-rose-500/40 w-full rounded-3xl p-4 space-y-3 text-slate-200 text-xs shadow-2xl">
+                <!-- Nội dung Modal được nạp bằng JS -->
+            </div>
+        </div>
+
+        <!-- MÀN HÌNH CHÍNH (POV GAMING CANVAS) -->
+        <div class="flex-1 relative overflow-hidden flex flex-col bg-slate-950">
             
-            <!-- TAB 1: BÀN LÀM NAIL (MAIN GAMEPLAY) -->
-            <main id="tab-salon" class="flex-1 p-3 flex flex-col justify-between overflow-y-auto">
+            <!-- TAB 1: BÀN LÀM NAIL GÓC NHÌN THỨ NHẤT (POV) -->
+            <main id="tab-pov" class="flex-1 p-2 flex flex-col justify-between overflow-y-auto">
                 
-                <!-- BẢN SƠN NAIL TƯƠNG TÁC (CANVAS BÀN TAY) -->
-                <div class="bg-white rounded-3xl p-3 border border-rose-200 shadow-md flex flex-col items-center justify-center relative">
-                    <span class="absolute top-2.5 left-3 text-[10px] font-bold text-rose-400 bg-rose-100 px-2 py-0.5 rounded-full"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Bàn Thiết Kế</span>
-                    <canvas id="nailCanvas" width="320" height="190" class="w-full max-w-[320px] h-[190px] block my-1 rounded-2xl bg-gradient-to-b from-rose-100/40 to-pink-50/20"></canvas>
+                <!-- BÀN LÀM VIỆC CANVAS FIRST PERSON POV -->
+                <div class="bg-slate-900 rounded-3xl p-2 border border-slate-800 shadow-xl flex flex-col items-center justify-center relative overflow-hidden">
+                    <span id="bg-scene-tag" class="absolute top-2 left-2 text-[9px] font-bold text-rose-300 bg-rose-950/80 border border-rose-800/60 px-2 py-0.5 rounded-full z-10"><i class="fa-solid fa-location-dot mr-1"></i>Nail Dạo Vỉa Hè</span>
+                    
+                    <canvas id="povCanvas" width="340" height="210" class="w-full max-w-[340px] h-[210px] block rounded-2xl bg-slate-950 shadow-inner border border-slate-800/80"></canvas>
                 </div>
 
-                <!-- THẺ YÊU CẦU CỦA KHÁCH HÀNG -->
-                <div id="customer-card" class="bg-white rounded-3xl p-3.5 border border-rose-200 shadow-md my-2">
-                    <div id="no-customer" class="text-center py-4 space-y-2">
-                        <i class="fa-solid fa-mug-hot text-rose-300 text-3xl animate-bounce"></i>
-                        <p class="text-xs text-slate-500 font-medium">Đang chờ vị khách tiếp theo bước vào tiệm...</p>
-                        <button onclick="spawnCustomer()" class="px-4 py-2 pink-bg text-white rounded-xl text-xs font-bold shadow-md">Đón Khách Ngay 🌸</button>
+                <!-- KHU VỰC THẺ KHÁCH HÀNG & THAO TÁC -->
+                <div id="client-card" class="bg-slate-900/90 rounded-3xl p-3 border border-slate-800 shadow-lg my-1.5 space-y-2">
+                    
+                    <!-- 1. Khi chưa có khách -->
+                    <div id="no-client-box" class="text-center py-3 space-y-2">
+                        <i class="fa-solid fa-hands-holding-child text-rose-400 text-3xl animate-bounce"></i>
+                        <p class="text-xs text-slate-400 font-medium">Đang chờ vị khách tiếp theo bước tới bàn làm móng...</p>
+                        <button onclick="spawnClient()" class="px-5 py-2 pink-grad text-white rounded-xl text-xs font-bold shadow-lg pulse-btn">Đón Khách Ngay 🌸</button>
                     </div>
 
-                    <div id="active-customer" class="hidden space-y-2.5">
+                    <!-- 2. Khi đang phục vụ khách -->
+                    <div id="active-client-box" class="hidden space-y-2">
                         <div class="flex justify-between items-center">
                             <div>
-                                <strong id="cust-name" class="text-xs font-extrabold text-slate-800">Chị Ngọc Trinh</strong>
-                                <span id="cust-patience" class="text-[10px] text-rose-500 font-bold block">Thanh kiên nhẫn: 100%</span>
+                                <strong id="cli-name" class="text-xs font-black text-rose-300">Chị Ngọc Trinh (Khách Kỹ Tính)</strong>
+                                <p id="cli-dialogue" class="text-[10px] text-slate-300 italic">"Sơn khéo giúp em nhé chị!"</p>
                             </div>
-                            <span id="cust-pay" class="text-sm font-black text-rose-500 bg-rose-100 px-2.5 py-1 rounded-xl">80.000đ</span>
+                            <span id="cli-price-tag" class="text-xs font-black text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-xl border border-emerald-800">80.000đ</span>
                         </div>
 
-                        <!-- Yêu cầu móng của khách -->
-                        <div class="bg-rose-50 p-2.5 rounded-2xl border border-rose-100 text-xs space-y-1">
-                            <p class="text-[11px] font-bold text-rose-700"><i class="fa-solid fa-list-check mr-1"></i>Yêu cầu bộ móng:</p>
-                            <div class="grid grid-cols-3 gap-1 text-[10px] font-medium text-slate-600">
-                                <span id="req-shape" class="bg-white p-1 rounded-lg border text-center">Dáng: Coffin</span>
-                                <span id="req-color" class="bg-white p-1 rounded-lg border text-center">Màu: Hồng Gel</span>
-                                <span id="req-decor" class="bg-white p-1 rounded-lg border text-center">Đính: Kim Tuyến</span>
+                        <!-- THANH KIÊN NHẪN SMOOTH RUNNING -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[9px] font-bold text-slate-400">
+                                <span>Thanh kiên nhẫn của khách</span>
+                                <span id="patience-status" class="text-emerald-400">Rất vui vẻ</span>
                             </div>
-                        </div>
-
-                        <!-- BẢNG BÚT SƠN & CÔNG CỤ -->
-                        <div class="space-y-2 pt-1">
-                            <div class="flex items-center space-x-1.5 overflow-x-auto pb-1">
-                                <span class="text-[10px] font-bold text-slate-400 shrink-0">Dáng:</span>
-                                <button onclick="setNailShape('square')" class="px-2 py-1 bg-slate-100 hover:bg-rose-100 text-[10px] font-bold rounded-lg shrink-0">Vuông</button>
-                                <button onclick="setNailShape('oval')" class="px-2 py-1 bg-slate-100 hover:bg-rose-100 text-[10px] font-bold rounded-lg shrink-0">Oval</button>
-                                <button onclick="setNailShape('coffin')" class="px-2 py-1 bg-slate-100 hover:bg-rose-100 text-[10px] font-bold rounded-lg shrink-0">Coffin</button>
-                                <button onclick="setNailShape('stiletto')" class="px-2 py-1 bg-slate-100 hover:bg-rose-100 text-[10px] font-bold rounded-lg shrink-0">Nhọn</button>
-                            </div>
-
-                            <div class="flex items-center space-x-1.5 overflow-x-auto pb-1">
-                                <span class="text-[10px] font-bold text-slate-400 shrink-0">Màu:</span>
-                                <button onclick="setNailColor('#ff477e')" class="w-6 h-6 rounded-full bg-[#ff477e] border-2 border-white shadow shrink-0"></button>
-                                <button onclick="setNailColor('#ff85a2')" class="w-6 h-6 rounded-full bg-[#ff85a2] border-2 border-white shadow shrink-0"></button>
-                                <button onclick="setNailColor('#d8b4fe')" class="w-6 h-6 rounded-full bg-[#d8b4fe] border-2 border-white shadow shrink-0"></button>
-                                <button onclick="setNailColor('#fde047')" class="w-6 h-6 rounded-full bg-[#fde047] border-2 border-white shadow shrink-0"></button>
-                                <button onclick="setNailColor('#38bdf8')" class="w-6 h-6 rounded-full bg-[#38bdf8] border-2 border-white shadow shrink-0"></button>
-                                <button onclick="setNailColor('#18181b')" class="w-6 h-6 rounded-full bg-[#18181b] border-2 border-white shadow shrink-0"></button>
-                            </div>
-
-                            <div class="flex items-center space-x-1.5 overflow-x-auto pb-1">
-                                <span class="text-[10px] font-bold text-slate-400 shrink-0">Đính:</span>
-                                <button onclick="setNailDecor('none')" class="px-2 py-1 bg-slate-100 text-[10px] font-bold rounded-lg shrink-0">Trơn</button>
-                                <button onclick="setNailDecor('glitter')" class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-lg shrink-0">✨ Kim Tuyến</button>
-                                <button onclick="setNailDecor('diamond')" class="px-2 py-1 bg-cyan-100 text-cyan-700 text-[10px] font-bold rounded-lg shrink-0">💎 Kim Cương</button>
-                                <button onclick="setNailDecor('bow')" class="px-2 py-1 bg-pink-100 text-pink-700 text-[10px] font-bold rounded-lg shrink-0">🎀 Charm Nơ</button>
+                            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                                <div id="patience-bar-fill" class="bg-emerald-500 h-full w-full transition-all duration-300"></div>
                             </div>
                         </div>
 
-                        <!-- NÚT HOÀN THÀNH -->
-                        <button onclick="finishCustomer()" class="w-full py-2.5 pink-bg text-white font-extrabold rounded-2xl text-xs shadow-lg pulse-btn mt-2"><i class="fa-solid fa-check-double mr-1.5"></i>SẤY GEL UV & HOÀN THÀNH</button>
+                        <!-- YÊU CẦU BỘ MÓNG -->
+                        <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 text-[10px] space-y-1">
+                            <span class="font-bold text-rose-400 block"><i class="fa-solid fa-clipboard-list mr-1"></i>Yêu cầu dịch vụ:</span>
+                            <div class="grid grid-cols-3 gap-1 text-[9px] text-slate-300">
+                                <span id="req-color-tag" class="bg-slate-900 p-1 rounded border border-slate-800 text-center">Sơn: Gel Hồng</span>
+                                <span id="req-decor-tag" class="bg-slate-900 p-1 rounded border border-slate-800 text-center">Đính: Nơ 3D</span>
+                                <span id="req-paymethod-tag" class="bg-slate-900 p-1 rounded border border-slate-800 text-center">Trả: Chuyển khoản</span>
+                            </div>
+                        </div>
+
+                        <!-- CÁC NÚT TƯƠNG TÁC TÁN GẪU -->
+                        <div class="flex space-x-1.5 pt-0.5">
+                            <button onclick="chatClient('praise')" class="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-[10px] font-bold rounded-lg text-rose-300"><i class="fa-solid fa-comment-dots mr-1"></i>Khen móng</button>
+                            <button onclick="chatClient('gossip')" class="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-[10px] font-bold rounded-lg text-rose-300"><i class="fa-solid fa-face-smile mr-1"></i>Tám chuyện</button>
+                            <button onclick="chatClient('tea')" class="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-[10px] font-bold rounded-lg text-rose-300"><i class="fa-solid fa-mug-hot mr-1"></i>Mời nước trà</button>
+                        </div>
+
+                        <!-- NÚT HOÀN THÀNH DỊCH VỤ -->
+                        <button onclick="finishClientService()" class="w-full py-2.5 pink-grad text-white font-black rounded-2xl text-xs shadow-lg pulse-btn mt-1"><i class="fa-solid fa-circle-check mr-1.5"></i>HOÀN THÀNH & TÍNH TIỀN</button>
+                    </div>
+
+                </div>
+            </main>
+
+            <!-- TAB 2: KHO SƠN & ĐỔI 15 LỌ TRÊN BÀN (WAREHOUSE) -->
+            <main id="tab-warehouse" class="flex-1 p-3 hidden space-y-3 overflow-y-auto">
+                <h2 class="font-extrabold text-xs text-slate-200 border-b border-slate-800 pb-2 flex justify-between items-center">
+                    <span><i class="fa-solid fa-warehouse pink-text mr-1.5"></i>KHO SƠN & TỦ DỤNG CỤ</span>
+                    <span class="text-[10px] text-rose-400 font-bold">15 Lọ Trực Tiếp Trên Bàn</span>
+                </h2>
+
+                <div class="bg-slate-900 p-2.5 rounded-2xl border border-slate-800 space-y-2">
+                    <strong class="text-[11px] text-rose-300 block">Danh Sách 15 Lọ Sơn Đang Đặt Trên Bàn POV:</strong>
+                    <div id="active-desk-polishes" class="grid grid-cols-5 gap-1.5 text-[9px] font-bold">
+                        <!-- Render bằng JS -->
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 p-2.5 rounded-2xl border border-slate-800 space-y-2">
+                    <strong class="text-[11px] text-slate-300 block">Tủ Sơn Trong Kho (Bấm vào lọ kho để đổi lên bàn):</strong>
+                    <div id="warehouse-polishes-list" class="grid grid-cols-2 gap-2 text-[10px]">
+                        <!-- Render bằng JS -->
                     </div>
                 </div>
             </main>
 
-            <!-- TAB 2: MÀU SƠN & PHỤ KIỆN (SHOP) -->
-            <main id="tab-catalog" class="flex-1 p-4 hidden space-y-3 overflow-y-auto">
-                <h2 class="font-extrabold text-sm text-slate-800 border-b border-rose-200 pb-2"><i class="fa-solid fa-palette pink-text mr-1.5"></i>Bộ Màu Sơn & Phụ Kiện Hot Trend</h2>
-                
-                <div class="grid grid-cols-1 gap-2.5">
-                    <div class="bg-white p-3 rounded-2xl border border-rose-100 flex justify-between items-center shadow-sm">
-                        <div>
-                            <strong class="text-xs font-bold text-slate-800 block">Sơn Mắt Mèo Kim Kim</strong>
-                            <p class="text-[10px] text-slate-400">Tăng 20% tiền thưởng từ mỗi bộ móng</p>
-                        </div>
-                        <button onclick="buyCatalog('catEye', 150000)" class="px-3 py-1.5 pink-bg text-white rounded-xl text-xs font-bold shadow">150.000đ</button>
-                    </div>
+            <!-- TAB 3: THIẾT LẬP GIÁ & TÙY CHỈNH DỊCH VỤ -->
+            <main id="tab-pricing" class="flex-1 p-3 hidden space-y-3 overflow-y-auto">
+                <h2 class="font-extrabold text-xs text-slate-200 border-b border-slate-800 pb-2"><i class="fa-solid fa-tags pink-text mr-1.5"></i>THIẾT LẬP GIÁ BÁN DỊCH VỤ THỰC TẾ</h2>
 
-                    <div class="bg-white p-3 rounded-2xl border border-rose-100 flex justify-between items-center shadow-sm">
-                        <div>
-                            <strong class="text-xs font-bold text-slate-800 block">Bộ Đá Khối Swarovski</strong>
-                            <p class="text-[10px] text-slate-400">Mở khóa đính kim cương sang chảnh</p>
-                        </div>
-                        <button onclick="buyCatalog('diamonds', 250000)" class="px-3 py-1.5 pink-bg text-white rounded-xl text-xs font-bold shadow">250.000đ</button>
-                    </div>
-
-                    <div class="bg-white p-3 rounded-2xl border border-rose-100 flex justify-between items-center shadow-sm">
-                        <div>
-                            <strong class="text-xs font-bold text-slate-800 block">Charm Nơ Hàn Quốc</strong>
-                            <p class="text-[10px] text-slate-400">Khách hài lòng hơn +0.3⭐ uy tín</p>
-                        </div>
-                        <button onclick="buyCatalog('bows', 200000)" class="px-3 py-1.5 pink-bg text-white rounded-xl text-xs font-bold shadow">200.000đ</button>
-                    </div>
+                <div id="pricing-settings-list" class="space-y-2.5">
+                    <!-- Render các slider chỉnh giá thực tế bằng JS -->
                 </div>
             </main>
 
-            <!-- TAB 3: NÂNG CẤP TIỆM (UPGRADES) -->
-            <main id="tab-upgrades" class="flex-1 p-4 hidden space-y-3 overflow-y-auto">
-                <h2 class="font-extrabold text-sm text-slate-800 border-b border-rose-200 pb-2"><i class="fa-solid fa-store pink-text mr-1.5"></i>Nâng Cấp Thiết Bị & Trang Thiết Bị</h2>
+            <!-- TAB 4: NHÂN VIÊN & QUẢN LÝ (STAFF) -->
+            <main id="tab-staff" class="flex-1 p-3 hidden space-y-3 overflow-y-auto">
+                <h2 class="font-extrabold text-xs text-slate-200 border-b border-slate-800 pb-2 flex justify-between">
+                    <span><i class="fa-solid fa-users pink-text mr-1.5"></i>QUẢN LÝ NHÂN VIÊN</span>
+                    <button onclick="triggerWeeklyReview()" class="text-[10px] bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded border border-purple-700">Đánh giá tuần</button>
+                </h2>
 
-                <div class="grid grid-cols-1 gap-2.5">
-                    <div class="bg-white p-3 rounded-2xl border border-rose-100 flex justify-between items-center shadow-sm">
-                        <div>
-                            <strong class="text-xs font-bold text-slate-800 block">Máy Sấy Gel UV Công Suất Cao</strong>
-                            <p class="text-[10px] text-slate-400">Khách sấy gel nhanh hơn x2 lần</p>
-                        </div>
-                        <button onclick="buyUpgrade('uvLamp', 300000)" class="px-3 py-1.5 bg-rose-500 text-white rounded-xl text-xs font-bold shadow">300.000đ</button>
-                    </div>
-
-                    <div class="bg-white p-3 rounded-2xl border border-rose-100 flex justify-between items-center shadow-sm">
-                        <div>
-                            <strong class="text-xs font-bold text-slate-800 block">Ghế Sofa Chờ Êm Ái</strong>
-                            <p class="text-[10px] text-slate-400">Khách hàng kiên nhẫn đợi lâu hơn</p>
-                        </div>
-                        <button onclick="buyUpgrade('sofa', 400000)" class="px-3 py-1.5 bg-rose-500 text-white rounded-xl text-xs font-bold shadow">400.000đ</button>
-                    </div>
-
-                    <div class="bg-white p-3 rounded-2xl border border-rose-100 flex justify-between items-center shadow-sm">
-                        <div>
-                            <strong class="text-xs font-bold text-slate-800 block">Tuyển Thợ Làm Móng Phụ</strong>
-                            <p class="text-[10px] text-slate-400">Tự động làm nail cho 1 khách hàng</p>
-                        </div>
-                        <button onclick="buyUpgrade('assistant', 1000000)" class="px-3 py-1.5 bg-purple-600 text-white rounded-xl text-xs font-bold shadow">1.000.000đ</button>
-                    </div>
+                <div id="staff-list-container" class="space-y-2">
+                    <!-- Render danh sách nhân viên bằng JS -->
                 </div>
             </main>
 
-            <!-- TAB 4: SAO LƯU DỮ LIỆU -->
-            <main id="tab-save" class="flex-1 p-4 hidden space-y-3 overflow-y-auto">
-                <h2 class="font-extrabold text-sm text-slate-800 border-b border-rose-200 pb-2"><i class="fa-solid fa-floppy-disk pink-text mr-1.5"></i>Sao Lưu Dữ Liệu Game</h2>
+            <!-- TAB 5: ĐÁNH GIÁ (REVIEWS) & ĐỀN BÙ VOUCHER -->
+            <main id="tab-reviews" class="flex-1 p-3 hidden space-y-3 overflow-y-auto">
+                <h2 class="font-extrabold text-xs text-slate-200 border-b border-slate-800 pb-2"><i class="fa-solid fa-star text-yellow-400 mr-1.5"></i>ĐÁNH GIÁ TỪ KHÁCH HÀNG REAL</h2>
 
-                <div class="bg-white p-3.5 rounded-2xl border border-rose-200 space-y-2 shadow-sm">
-                    <strong class="text-xs font-bold text-slate-800 block">1. Xuất Mã Sao Lưu (Export)</strong>
-                    <textarea id="export-code" class="w-full text-[10px] p-2 bg-rose-50 border border-rose-200 rounded-xl font-mono h-16 outline-none" readonly></textarea>
-                    <button onclick="copySaveCode()" class="w-full py-2 pink-bg text-white rounded-xl text-xs font-bold shadow"><i class="fa-solid fa-copy mr-1"></i>Copy Mã Sao Lưu</button>
+                <div id="reviews-list-container" class="space-y-2">
+                    <!-- Render reviews bằng JS -->
+                </div>
+            </main>
+
+            <!-- TAB 6: CAI ĐẶT & HƯỚNG DẪN (SETTINGS & GUIDE) -->
+            <main id="tab-settings" class="flex-1 p-3 hidden space-y-3 overflow-y-auto">
+                <h2 class="font-extrabold text-xs text-slate-200 border-b border-slate-800 pb-2"><i class="fa-solid fa-sliders pink-text mr-1.5"></i>CÀI ĐẶT & HƯỚNG DẪN CHƠI</h2>
+
+                <div class="bg-slate-900 p-3 rounded-2xl border border-slate-800 space-y-2 text-xs">
+                    <strong class="text-rose-300 block">Âm Âm Nhạc & Âm Thanh (Web Audio API)</strong>
+                    <div class="flex justify-between items-center">
+                        <span>Nhạc nền Lo-Fi Chill:</span>
+                        <button id="btn-toggle-bgm" onclick="toggleBGM()" class="px-3 py-1 bg-emerald-600 text-white rounded text-[10px] font-bold">BẬT BGM</button>
+                    </div>
                 </div>
 
-                <div class="bg-white p-3.5 rounded-2xl border border-rose-200 space-y-2 shadow-sm">
-                    <strong class="text-xs font-bold text-slate-800 block">2. Khôi Phục Game (Import)</strong>
-                    <textarea id="import-code" class="w-full text-[10px] p-2 bg-rose-50 border border-rose-200 rounded-xl font-mono h-16 outline-none" placeholder="Dán mã sao lưu vào đây..."></textarea>
-                    <button onclick="importSaveCode()" class="w-full py-2 bg-purple-600 text-white rounded-xl text-xs font-bold shadow"><i class="fa-solid fa-upload mr-1"></i>Khôi Phục Ngay</button>
+                <div class="bg-slate-900 p-3 rounded-2xl border border-slate-800 space-y-2 text-xs">
+                    <strong class="text-rose-300 block">Sao Lưu Dữ Liệu Game</strong>
+                    <textarea id="export-code" class="w-full text-[9px] p-2 bg-slate-950 border border-slate-800 rounded text-slate-300 font-mono h-14" readonly></textarea>
+                    <button onclick="copySaveCode()" class="w-full py-1.5 pink-grad text-white rounded text-xs font-bold"><i class="fa-solid fa-copy mr-1"></i>Copy Mã Sao Lưu</button>
+                    <textarea id="import-code" class="w-full text-[9px] p-2 bg-slate-950 border border-slate-800 rounded text-slate-300 font-mono h-14 mt-2" placeholder="Dán mã khôi phục..."></textarea>
+                    <button onclick="importSaveCode()" class="w-full py-1.5 bg-blue-600 text-white rounded text-xs font-bold"><i class="fa-solid fa-upload mr-1"></i>Khôi Phục Dữ Liệu</button>
                 </div>
 
-                <button onclick="resetGame()" class="w-full py-2 bg-red-500 text-white rounded-xl text-xs font-bold mt-4 shadow"><i class="fa-solid fa-trash mr-1"></i>Xóa Dữ Liệu & Chơi Lại</button>
+                <button onclick="resetData()" class="w-full py-2 bg-red-600/80 text-white rounded-xl text-xs font-bold mt-2">Xóa Dữ Liệu & Chơi Lại</button>
             </main>
 
         </div>
 
-        <!-- BOTTOM NAV BAR -->
-        <nav class="bg-white border-t border-rose-100 flex justify-around py-2.5 px-2 shrink-0 z-40">
-            <button onclick="switchTab('salon')" id="nav-salon" class="flex flex-col items-center pink-text text-[11px] font-bold">
-                <i class="fa-solid fa-hand-sparkles text-lg mb-0.5"></i>
-                <span>Làm Nail</span>
+        <!-- BOTTOM NAV BAR FIXED -->
+        <nav class="bg-slate-900 border-t border-slate-800 flex justify-around py-2 px-1 shrink-0 z-40">
+            <button onclick="switchTab('pov')" id="nav-pov" class="flex flex-col items-center pink-text text-[10px] font-bold">
+                <i class="fa-solid fa-hand-sparkles text-base mb-0.5"></i>
+                <span>Bàn POV</span>
             </button>
-            <button onclick="switchTab('catalog')" id="nav-catalog" class="flex flex-col items-center text-slate-400 text-[11px] font-bold hover:text-rose-400">
-                <i class="fa-solid fa-palette text-lg mb-0.5"></i>
-                <span>Sơn & Đá</span>
+            <button onclick="switchTab('warehouse')" id="nav-warehouse" class="flex flex-col items-center text-slate-400 text-[10px] font-bold hover:text-slate-200">
+                <i class="fa-solid fa-warehouse text-base mb-0.5"></i>
+                <span>Kho Sơn</span>
             </button>
-            <button onclick="switchTab('upgrades')" id="nav-upgrades" class="flex flex-col items-center text-slate-400 text-[11px] font-bold hover:text-rose-400">
-                <i class="fa-solid fa-store text-lg mb-0.5"></i>
-                <span>Nâng Cấp</span>
+            <button onclick="switchTab('pricing')" id="nav-pricing" class="flex flex-col items-center text-slate-400 text-[10px] font-bold hover:text-slate-200">
+                <i class="fa-solid fa-tags text-base mb-0.5"></i>
+                <span>Giá Bán</span>
             </button>
-            <button onclick="switchTab('save')" id="nav-save" class="flex flex-col items-center text-slate-400 text-[11px] font-bold hover:text-rose-400">
-                <i class="fa-solid fa-floppy-disk text-lg mb-0.5"></i>
-                <span>Sao Lưu</span>
+            <button onclick="switchTab('staff')" id="nav-staff" class="flex flex-col items-center text-slate-400 text-[10px] font-bold hover:text-slate-200">
+                <i class="fa-solid fa-users text-base mb-0.5"></i>
+                <span>Nhân Viên</span>
+            </button>
+            <button onclick="switchTab('reviews')" id="nav-reviews" class="flex flex-col items-center text-slate-400 text-[10px] font-bold hover:text-slate-200">
+                <i class="fa-solid fa-star text-base mb-0.5"></i>
+                <span>Đánh Giá</span>
+            </button>
+            <button onclick="switchTab('settings')" id="nav-settings" class="flex flex-col items-center text-slate-400 text-[10px] font-bold hover:text-slate-200">
+                <i class="fa-solid fa-sliders text-base mb-0.5"></i>
+                <span>Cài Đặt</span>
             </button>
         </nav>
 
     </div>
 
     <script>
-        // STATE DỮ LIỆU GAME
-        let game = {
+        // --- GAME STATE ---
+        let state = {
+            debt: 50000000,
             money: 500000,
-            rating: 5.0,
-            ratingsCount: 1,
+            rating: 1.5,
+            ratingsCount: 2,
+            health: 100,
+            level: 1, // 1 -> 5
             day: 1,
-            hour: 8,
-            minute: 0,
-            level: 'Tiệm Nhỏ',
-            unlocked: { catEye: false, diamonds: false, bows: false },
-            upgrades: { uvLamp: false, sofa: false, assistant: false }
+            dayOfWeek: 1, // 1: T2 -> 7: CN
+            bgmOn: false,
+            
+            // Dịch vụ & Giá cài đặt thực tế
+            pricing: {
+                manicure: { name: 'Sơn Móng Cơ Bản', price: 60000, suggested: 60000, maxLimit: 150000 },
+                gel: { name: 'Sơn Gel Hàn Quốc', price: 120000, suggested: 120000, maxLimit: 300000 },
+                catEye: { name: 'Sơn Mắt Mèo Kim Cương', price: 180000, suggested: 180000, maxLimit: 450000 },
+                charm: { name: 'Đính Charm Nơ 3D / Đá', price: 80000, suggested: 80000, maxLimit: 200000 }
+            },
+
+            // Danh sách sơn trong kho & Đang đặt trên bàn (Tối đa 15 lọ)
+            activePolishes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+            polishes: Array.from({length: 30}, (_, i) => ({
+                id: i,
+                name: `Màu Sơn #${i+1}`,
+                color: ['#ff477e', '#ff85a2', '#d8b4fe', '#fde047', '#38bdf8', '#18181b', '#22c55e', '#a855f7', '#ec4899', '#f97316'][i % 10],
+                usesLeft: 45, // 45 ngón
+                isDry: false,
+                isMixed: false
+            })),
+
+            // Dung dịch tẩy rửa móng
+            acetoneUses: 30,
+
+            // Nhân viên
+            staff: [
+                { id: 1, name: 'Bé Linh (GenZ)', type: 'GenZ Sáng Tạo', salary: 4000000, errorRate: 0.15, loyalty: 80, diligence: 85 }
+            ],
+
+            // Lịch sử Đánh giá (Reviews)
+            reviews: [
+                { id: 1, name: 'Chị Mai', stars: 2, comment: 'Chờ hơi lâu nhưng chủ tiệm nhiệt tình.', redeemed: false }
+            ]
         };
 
-        // BÀN THIẾT KẾ NAIL CURRENT
-        let currentDesign = {
-            shape: 'coffin',
-            color: '#ff477e',
-            decor: 'glitter'
-        };
+        // RIDE & CLIENT STATE
+        let currentClient = null;
+        let patienceTimer = null;
 
-        let currentCustomer = null;
-        let patienceInterval = null;
+        // WEB AUDIO API SYNTHESIZER
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let bgmOsc = null;
 
-        const customerNames = ['Chị Ngọc Trinh', 'Chị Ninh Dương', 'Cô Ba Sài Gòn', 'Chị Linh Ka', 'Bạn Hà An', 'Khách Tây Emma'];
-        const shapes = ['square', 'oval', 'coffin', 'stiletto'];
-        const colors = ['#ff477e', '#ff85a2', '#d8b4fe', '#fde047', '#38bdf8', '#18181b'];
-        const decors = ['none', 'glitter', 'diamond', 'bow'];
-
-        // LƯU & TẢI GAME
-        function saveGame() {
-            localStorage.setItem('nail_salon_sim_save', JSON.stringify(game));
-            updateExportCode();
-        }
-
-        function loadGame() {
-            const saved = localStorage.getItem('nail_salon_sim_save');
-            if (saved) {
-                try { game = Object.assign(game, JSON.parse(saved)); } catch(e){}
-            }
-            updateUI();
-        }
-
-        function updateExportCode() {
+        function playSound(type) {
             try {
-                const code = btoa(encodeURIComponent(JSON.stringify(game)));
-                document.getElementById('export-code').value = code;
-            } catch(e){}
-        }
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const now = audioCtx.currentTime;
 
-        function copySaveCode() {
-            const el = document.getElementById('export-code');
-            el.select();
-            document.execCommand('copy');
-            showToast('Đã sao chép mã sao lưu!');
-        }
-
-        function importSaveCode() {
-            const code = document.getElementById('import-code').value.trim();
-            if (!code) return showToast('Vui lòng dán mã khôi phục!');
-            try {
-                const parsed = JSON.parse(decodeURIComponent(atob(code)));
-                if (parsed && parsed.money !== undefined) {
-                    game = parsed;
-                    saveGame();
-                    updateUI();
-                    showToast('Khôi phục thành công!');
-                }
-            } catch(e) {
-                showToast('Mã không hợp lệ!');
-            }
-        }
-
-        function resetGame() {
-            if (confirm('Xóa dữ liệu và chơi lại từ đầu?')) {
-                localStorage.removeItem('nail_salon_sim_save');
-                location.reload();
-            }
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 2500);
-        }
-
-        // UPDATE UI
-        function updateUI() {
-            document.getElementById('money-display').innerText = game.money.toLocaleString() + 'đ';
-            document.getElementById('rating-display').innerText = game.rating.toFixed(1) + ' ⭐';
-            document.getElementById('day-badge').innerText = `Ngày ${game.day}`;
-            document.getElementById('time-display').innerText = 
-                `🕕 ${String(game.hour).padStart(2,'0')}:${String(game.minute).padStart(2,'0')} · Mở cửa`;
-            document.getElementById('level-display').innerText = game.level;
-            updateExportCode();
-            drawNailCanvas();
-        }
-
-        // VẼ CANVAS BÀN TAY & MÓNG
-        function drawNailCanvas() {
-            const cvs = document.getElementById('nailCanvas');
-            if (!cvs) return;
-            const ctx = cvs.getContext('2d');
-            ctx.clearRect(0, 0, cvs.width, cvs.height);
-
-            // BÀN TAY LÓT SOFA
-            ctx.fillStyle = '#fbcfe8';
-            ctx.beginPath();
-            ctx.ellipse(160, 220, 130, 80, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // 5 NGÓN TAY
-            const fingers = [
-                { x: 70, y: 110, w: 22, h: 75 },
-                { x: 112, y: 80, w: 22, h: 100 },
-                { x: 155, y: 70, w: 23, h: 110 },
-                { x: 198, y: 80, w: 22, h: 100 },
-                { x: 240, y: 115, w: 20, h: 70 }
-            ];
-
-            // VẼ NGÓN TAY
-            fingers.forEach(f => {
-                ctx.fillStyle = '#fce7f3';
-                ctx.beginPath();
-                ctx.roundRect(f.x, f.y, f.w, f.h, 12);
-                ctx.fill();
-                ctx.strokeStyle = '#fbcfe8';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-
-                // VẼ MÓNG NAIL
-                ctx.fillStyle = currentDesign.color;
-                ctx.beginPath();
-
-                if (currentDesign.shape === 'square') {
-                    ctx.roundRect(f.x + 2, f.y - 12, f.w - 4, 25, [2, 2, 8, 8]);
-                } else if (currentDesign.shape === 'oval') {
-                    ctx.roundRect(f.x + 2, f.y - 14, f.w - 4, 26, [10, 10, 6, 6]);
-                } else if (currentDesign.shape === 'coffin') {
-                    ctx.roundRect(f.x + 3, f.y - 15, f.w - 6, 26, [3, 3, 6, 6]);
-                } else { // stiletto
-                    ctx.moveTo(f.x + f.w/2, f.y - 18);
-                    ctx.lineTo(f.x + f.w - 2, f.y + 10);
-                    ctx.lineTo(f.x + 2, f.y + 10);
-                    ctx.closePath();
-                }
-                ctx.fill();
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-
-                // VẼ ĐÍNH ĐÁ / DECOR
-                if (currentDesign.decor === 'glitter') {
-                    ctx.fillStyle = '#ffffff';
-                    for(let i=0; i<4; i++) {
-                        ctx.beginPath();
-                        ctx.arc(f.x + 6 + i*4, f.y - 5 + (i%2)*6, 1.5, 0, Math.PI*2);
-                        ctx.fill();
-                    }
-                } else if (currentDesign.decor === 'diamond') {
-                    ctx.fillStyle = '#38bdf8';
-                    ctx.beginPath();
-                    ctx.arc(f.x + f.w/2, f.y - 2, 3, 0, Math.PI*2);
-                    ctx.fill();
-                } else if (currentDesign.decor === 'bow') {
-                    ctx.fillStyle = '#ff758c';
-                    ctx.beginPath();
-                    ctx.arc(f.x + f.w/2 - 3, f.y, 2.5, 0, Math.PI*2);
-                    ctx.arc(f.x + f.w/2 + 3, f.y, 2.5, 0, Math.PI*2);
-                    ctx.fill();
-                }
-            });
-        }
-
-        // TẠO KHÁCH HÀNG MỚI
-        function spawnCustomer() {
-            if (currentCustomer) return;
-
-            const name = customerNames[Math.floor(Math.random() * customerNames.length)];
-            const reqShape = shapes[Math.floor(Math.random() * shapes.length)];
-            const reqColor = colors[Math.floor(Math.random() * colors.length)];
-            const reqDecor = decors[Math.floor(Math.random() * decors.length)];
-            const pay = Math.floor(Math.random() * 50000) + 70000;
-
-            currentCustomer = { name, reqShape, reqColor, reqDecor, pay, patience: 100 };
-
-            document.getElementById('no-customer').classList.add('hidden');
-            document.getElementById('active-customer').classList.remove('hidden');
-
-            document.getElementById('cust-name').innerText = name;
-            document.getElementById('cust-pay').innerText = pay.toLocaleString() + 'đ';
-            document.getElementById('req-shape').innerText = `Dáng: ${reqShape.toUpperCase()}`;
-            document.getElementById('req-color').innerText = `Màu: Gel`;
-            document.getElementById('req-decor').innerText = `Đính: ${reqDecor}`;
-
-            // THANH KIÊN NHẪN
-            clearInterval(patienceInterval);
-            patienceInterval = setInterval(() => {
-                currentCustomer.patience -= 2;
-                document.getElementById('cust-patience').innerText = `Thanh kiên nhẫn: ${currentCustomer.patience}%`;
-                if (currentCustomer.patience <= 0) {
-                    clearInterval(patienceInterval);
-                    showToast('Khách tức giận bỏ về vì đợi lâu!');
-                    cancelCustomer();
-                }
-            }, 1000);
-        }
-
-        function cancelCustomer() {
-            clearInterval(patienceInterval);
-            currentCustomer = null;
-            document.getElementById('active-customer').classList.add('hidden');
-            document.getElementById('no-customer').classList.remove('hidden');
-        }
-
-        function setNailShape(s) { currentDesign.shape = s; drawNailCanvas(); }
-        function setNailColor(c) { currentDesign.color = c; drawNailCanvas(); }
-        function setNailDecor(d) { currentDesign.decor = d; drawNailCanvas(); }
-
-        function finishCustomer() {
-            if (!currentCustomer) return;
-            clearInterval(patienceInterval);
-
-            // TÍNH ĐIỂM CHÍNH XÁC
-            let score = 100;
-            if (currentDesign.shape !== currentCustomer.reqShape) score -= 20;
-            if (currentDesign.decor !== currentCustomer.reqDecor) score -= 20;
-
-            const tip = score === 100 ? 20000 : 0;
-            const totalEarned = currentCustomer.pay + tip;
-
-            game.money += totalEarned;
-            game.rating = Math.min(5.0, ((game.rating * game.ratingsCount) + (score/20)) / (game.ratingsCount + 1));
-            game.ratingsCount++;
-
-            showToast(`Hoàn thành! Nhận +${totalEarned.toLocaleString()}đ (Tip: ${tip}đ)`);
-
-            cancelCustomer();
-            saveGame();
-            updateUI();
-
-            setTimeout(spawnCustomer, 2000);
-        }
-
-        // CỬA HÀNG & NÂNG CẤP
-        function buyCatalog(type, price) {
-            if (game.money < price) return showToast('Không đủ tiền!');
-            game.money -= price;
-            game.unlocked[type] = true;
-            saveGame(); updateUI();
-            showToast('Mở khóa thành công!');
-        }
-
-        function buyUpgrade(type, price) {
-            if (game.money < price) return showToast('Không đủ tiền!');
-            game.money -= price;
-            game.upgrades[type] = true;
-            saveGame(); updateUI();
-            showToast('Nâng cấp tiệm thành công!');
-        }
-
-        function switchTab(tab) {
-            ['salon', 'catalog', 'upgrades', 'save'].forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.getElementById(`nav-${t}`).className = 'flex flex-col items-center text-slate-400 text-[11px] font-bold hover:text-rose-400';
-            });
-            document.getElementById(`tab-${tab}`).classList.remove('hidden');
-            document.getElementById(`nav-${tab}`).className = 'flex flex-col items-center pink-text text-[11px] font-bold';
-        }
-
-        // CLOCK LOOP (Thời gian trôi)
-        setInterval(() => {
-            game.minute += 2;
-            if (game.minute >= 60) { game.hour++; game.minute = 0; }
-            if (game.hour >= 21) {
-                game.hour = 8; game.day++;
-                showToast(`Hết ngày! Bước sang Ngày ${game.day}`);
-            }
-            updateUI();
-        }, 1000);
-
-        window.onload = () => {
-            loadGame();
-            setTimeout(spawnCustomer, 1500);
-        };
-    </script>
-</body>
-</html>
+                if (type === 'tingting') { // Âm thanh "Ting Ting" Chuyển khoản ngân hàng chuẩn!
+                    const osc1 = audioCtx.createOsci
