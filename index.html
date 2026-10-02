@@ -3,224 +3,296 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chạy Grab Simulator - GPS Map Edition</title>
+    <title>Grab Driver Simulator - Real GPS Map</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Leaflet Real World Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap');
         body { font-family: 'Lexend', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
-        .grab-bg { background-color: #00b14f; }
+        .grab-bg { background: linear-gradient(135deg, #00b14f 0%, #008a3e 100%); }
         .grab-text { color: #00b14f; }
         .pulse-btn { animation: pulse 1.5s infinite; }
         @keyframes pulse {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 177, 79, 0.7); }
-            70% { transform: scale(1.03); box-shadow: 0 0 0 10px rgba(0, 177, 79, 0); }
+            70% { transform: scale(1.03); box-shadow: 0 0 0 12px rgba(0, 177, 79, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 177, 79, 0); }
         }
+        /* Style cho icon Leaflet Custom */
+        .driver-marker-icon, .pin-a-icon, .pin-b-icon {
+            display: flex; items-center: center; justify-content: center;
+            border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .leaflet-container { font-family: 'Lexend', sans-serif; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 md:p-4">
 
-    <div class="w-full max-w-md bg-slate-900 h-screen md:h-[840px] md:rounded-3xl shadow-2xl flex flex-col relative overflow-hidden border border-slate-800">
+    <!-- CONTAINER CHÍNH -->
+    <div class="w-full max-w-md bg-slate-900 h-screen md:h-[860px] md:rounded-3xl shadow-2xl flex flex-col relative overflow-hidden border border-slate-800">
         
-        <!-- HEADER TRẠNG THÁI -->
-        <header class="grab-bg text-white p-3 pt-4 shadow-lg z-20 shrink-0">
+        <!-- HEADER TRẠNG THÁI CAO CẤP -->
+        <header class="grab-bg text-white p-3 pt-4 shadow-xl z-30 shrink-0 relative">
             <div class="flex justify-between items-center mb-2">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-motorcycle text-xl"></i>
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white shadow-inner">
+                        <i class="fa-solid fa-motorcycle text-lg"></i>
+                    </div>
                     <div>
-                        <h1 class="font-extrabold text-sm leading-tight">Grab Driver GPS</h1>
-                        <p id="weather-text" class="text-[10px] text-green-100"><i class="fa-solid fa-sun mr-1"></i>Trời nắng đẹp</p>
+                        <h1 class="font-extrabold text-sm leading-tight tracking-wide">GRAB DRIVER GPS</h1>
+                        <p id="weather-text" class="text-[10px] text-green-100 font-medium flex items-center">
+                            <i class="fa-solid fa-sun text-yellow-300 mr-1"></i> Sài Gòn Nắng Đẹp
+                        </p>
                     </div>
                 </div>
                 <div class="text-right">
-                    <span id="day-badge" class="bg-black/20 text-[10px] px-2 py-0.5 rounded-full font-bold">Ngày 1</span>
-                    <p id="time-clock" class="text-lg font-black mt-0.5 tracking-wider">06:00</p>
+                    <span id="day-badge" class="bg-black/30 backdrop-blur-md text-[10px] px-2.5 py-0.5 rounded-full font-bold border border-white/10">Ngày 1</span>
+                    <p id="time-clock" class="text-lg font-black mt-0.5 tracking-wider text-yellow-300">06:00</p>
                 </div>
             </div>
 
-            <!-- CHỈ SỐ VÍ / XĂNG / SỨC KHỎE -->
-            <div class="grid grid-cols-4 gap-1.5 bg-black/20 backdrop-blur-md p-2 rounded-xl text-center text-xs">
-                <div>
-                    <span class="text-green-200 block text-[9px] uppercase font-semibold">Ví Grab</span>
-                    <strong id="money-val" class="text-xs font-bold text-yellow-300">200k</strong>
+            <!-- THANH CHỈ SỐ DASHBOARD -->
+            <div class="grid grid-cols-4 gap-2 bg-black/30 backdrop-blur-md p-2 rounded-2xl text-center text-xs border border-white/10">
+                <div class="bg-white/5 p-1 rounded-xl">
+                    <span class="text-green-200 block text-[9px] uppercase font-bold">Ví tiền</span>
+                    <strong id="money-val" class="text-xs font-black text-yellow-300">200k</strong>
                 </div>
-                <div>
-                    <span class="text-green-200 block text-[9px] uppercase font-semibold">Xăng</span>
-                    <strong id="fuel-val" class="text-xs font-bold text-white">100%</strong>
+                <div class="bg-white/5 p-1 rounded-xl">
+                    <span class="text-green-200 block text-[9px] uppercase font-bold">Xăng</span>
+                    <strong id="fuel-val" class="text-xs font-black text-cyan-300">100%</strong>
                 </div>
-                <div>
-                    <span class="text-green-200 block text-[9px] uppercase font-semibold">Sức khỏe</span>
-                    <strong id="health-val" class="text-xs font-bold text-white">100%</strong>
+                <div class="bg-white/5 p-1 rounded-xl">
+                    <span class="text-green-200 block text-[9px] uppercase font-bold">Sức khỏe</span>
+                    <strong id="health-val" class="text-xs font-black text-emerald-300">100%</strong>
                 </div>
-                <div>
-                    <span class="text-green-200 block text-[9px] uppercase font-semibold">Đánh giá</span>
-                    <strong id="rating-val" class="text-xs font-bold text-yellow-300">5.0 ⭐</strong>
+                <div class="bg-white/5 p-1 rounded-xl">
+                    <span class="text-green-200 block text-[9px] uppercase font-bold">Đánh giá</span>
+                    <strong id="rating-val" class="text-xs font-black text-amber-300">5.0 ⭐</strong>
                 </div>
             </div>
         </header>
 
         <!-- TOAST THÔNG BÁO -->
-        <div id="toast-box" class="hidden absolute top-28 left-4 right-4 z-50 bg-slate-800/95 text-white p-3 rounded-xl shadow-2xl border border-slate-700 text-xs flex items-center space-x-2">
-            <i class="fa-solid fa-circle-info text-yellow-400 text-base"></i>
-            <span id="toast-msg">Thông báo...</span>
+        <div id="toast-box" class="hidden absolute top-28 left-4 right-4 z-50 bg-slate-900/95 text-white p-3.5 rounded-2xl shadow-2xl border border-emerald-500/40 text-xs flex items-center space-x-3 backdrop-blur-lg">
+            <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+            <span id="toast-msg" class="font-medium">Thông báo...</span>
         </div>
 
-        <!-- CONTAINER NỘI DUNG CHÍNH -->
+        <!-- CONTAINER TAB NỘI DUNG -->
         <div class="flex-1 relative overflow-hidden flex flex-col">
             
-            <!-- TAB 1: BẢN ĐỒ GPS (MAIN GAMEPLAY) -->
+            <!-- TAB 1: BẢN ĐỒ GPS THỰC TẾ (REAL MAP) -->
             <main id="tab-map" class="flex-1 relative flex flex-col">
-                <!-- CANVAS BẢN ĐỒ -->
+                
+                <!-- BẢN ĐỒ LEAFLET -->
                 <div class="flex-1 w-full h-full relative">
-                    <canvas id="gpsCanvas" class="w-full h-full block bg-slate-800"></canvas>
+                    <div id="leafletMap" class="w-full h-full z-10"></div>
 
-                    <!-- NÚT BẬT/TẮT APP KHÔNG CÓ ĐƠN -->
-                    <div id="app-toggle-box" class="absolute top-3 left-3 right-3 flex justify-between items-center bg-slate-900/90 backdrop-blur-md p-2.5 rounded-xl border border-slate-700/80 shadow-lg z-10">
-                        <div class="flex items-center space-x-2">
-                            <span id="status-dot" class="w-3 h-3 rounded-full bg-red-500"></span>
-                            <span id="status-text" class="text-xs font-bold text-slate-300">Đang Ngoại Tuyến</span>
+                    <!-- THỦ THUẬT OVERLAY TẮT/BẬT APP -->
+                    <div class="absolute top-3 left-3 right-3 flex justify-between items-center bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-700/80 shadow-2xl z-20">
+                        <div class="flex items-center space-x-2.5">
+                            <span id="status-dot" class="w-3.5 h-3.5 rounded-full bg-red-500 shadow-lg shadow-red-500/50"></span>
+                            <span id="status-text" class="text-xs font-bold text-slate-200">Đang Ngoại Tuyến</span>
                         </div>
-                        <button id="btn-toggle-app" onclick="toggleAppStatus()" class="px-4 py-1.5 bg-green-600 text-white rounded-lg text-xs font-bold shadow-md">BẬT APP</button>
+                        <button id="btn-toggle-app" onclick="toggleAppStatus()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-emerald-600/30 transition-all active:scale-95">BẬT APP</button>
                     </div>
                 </div>
 
-                <!-- KHU VỰC THẺ CUỐC XE BÊN DƯỚI -->
-                <div class="p-3 bg-slate-900 border-t border-slate-800 shrink-0 z-10">
+                <!-- THẺ CUỐC XE BOTTOM SHEET -->
+                <div class="p-3.5 bg-slate-900 border-t border-slate-800 shrink-0 z-20">
                     
                     <!-- 1. Trạng thái Đang Chờ Đơn -->
                     <div id="card-idle" class="text-center py-2 space-y-1">
-                        <p class="text-xs text-slate-400"><i class="fa-solid fa-radar animate-spin mr-1"></i> Bật App và chạy xe quanh phố để nhận đơn...</p>
+                        <p class="text-xs text-slate-400 font-medium flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-radar animate-spin text-emerald-400 text-sm"></i>
+                            <span>Bật App để quét đơn hàng thực tế xung quanh...</span>
+                        </p>
                     </div>
 
                     <!-- 2. Thẻ Đơn Hàng Mới Tới -->
-                    <div id="card-offer" class="hidden space-y-2">
-                        <div class="flex justify-between items-start">
-                            <span id="offer-type" class="bg-green-500/20 text-green-400 text-[10px] font-bold px-2 py-0.5 rounded border border-green-500/30">GrabBike</span>
-                            <span id="offer-price" class="text-base font-extrabold text-green-400">35.000đ</span>
+                    <div id="card-offer" class="hidden space-y-2.5 bg-slate-800/80 p-3 rounded-2xl border border-emerald-500/30">
+                        <div class="flex justify-between items-center">
+                            <span id="offer-type" class="bg-emerald-500/20 text-emerald-400 text-[10px] font-black px-2.5 py-1 rounded-lg border border-emerald-500/40 uppercase tracking-wider">GrabBike</span>
+                            <span id="offer-price" class="text-lg font-black text-emerald-400">35.000đ</span>
                         </div>
                         <div class="text-xs space-y-1">
-                            <p class="text-slate-300 font-bold" id="offer-customer">Khách: Nguyễn Văn A (4.9★)</p>
-                            <p class="text-[11px] text-slate-400 italic" id="offer-note">"Chạy cẩn thận giúp em!"</p>
-                            <p class="text-[11px] text-slate-300"><i class="fa-solid fa-circle text-green-500 mr-1"></i> <span id="offer-from">Điểm A</span></p>
-                            <p class="text-[11px] text-slate-300"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i> <span id="offer-to">Điểm B</span></p>
+                            <p class="text-slate-200 font-bold" id="offer-customer"><i class="fa-solid fa-user text-slate-400 mr-1.5"></i>Khách: Nguyễn Văn A (4.9★)</p>
+                            <p class="text-[11px] text-amber-300 italic bg-amber-500/10 p-1.5 rounded-lg border border-amber-500/20" id="offer-note">"Chạy cẩn thận giúp em!"</p>
+                            <div class="pt-1 space-y-1">
+                                <p class="text-[11px] text-slate-300 truncate"><i class="fa-solid fa-circle text-emerald-500 mr-1.5"></i><span id="offer-from">Chợ Bến Thành</span></p>
+                                <p class="text-[11px] text-slate-300 truncate"><i class="fa-solid fa-location-dot text-red-500 mr-1.5"></i><span id="offer-to">Phố Đi Bộ Nguyễn Huệ</span></p>
+                            </div>
                         </div>
                         <div class="flex space-x-2 pt-1">
-                            <button onclick="declineRide()" class="w-1/3 py-2 bg-slate-800 text-slate-300 rounded-lg text-xs font-bold">Bỏ qua</button>
-                            <button onclick="acceptRide()" class="w-2/3 py-2 grab-bg text-white rounded-lg text-xs font-bold shadow-md pulse-btn">CHẤP NHẬN CUỐC</button>
+                            <button onclick="declineRide()" class="w-1/3 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl text-xs font-bold transition">Bỏ qua</button>
+                            <button onclick="acceptRide()" class="w-2/3 py-2.5 grab-bg text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-600/30 pulse-btn">CHẤP NHẬN CUỐC</button>
                         </div>
                     </div>
 
                     <!-- 3. Thẻ Đang Đón Khách (Giai đoạn 1) -->
-                    <div id="card-pickup" class="hidden space-y-2">
+                    <div id="card-pickup" class="hidden space-y-2 bg-slate-800/80 p-3 rounded-2xl border border-amber-500/30">
                         <div class="flex justify-between items-center text-xs">
-                            <span class="text-yellow-400 font-bold"><i class="fa-solid fa-location-arrow animate-bounce mr-1"></i> ĐANG TỚI ĐIỂM ĐÓN</span>
-                            <span id="pickup-dist" class="text-slate-400">0.8 km</span>
+                            <span class="text-amber-400 font-bold flex items-center"><i class="fa-solid fa-location-arrow animate-bounce mr-1.5"></i> ĐANG ĐẾN ĐIỂM ĐÓN (A)</span>
+                            <span id="pickup-dist" class="text-slate-300 font-mono font-bold">0.8 km</span>
                         </div>
-                        <p class="text-xs text-slate-200 font-medium">Lái xe tới điểm đón màu xanh lá trên bản đồ...</p>
-                        <button id="btn-arrived-pickup" onclick="arrivedAtPickup()" class="w-full py-2.5 bg-yellow-500 text-slate-950 font-extrabold rounded-lg text-xs shadow-md">ĐÃ TỚI ĐIỂM ĐÓN / LẤY HÀNG</button>
+                        <p class="text-[11px] text-slate-300">Di chuyển theo vạch chỉ đường xanh lá tới Marker A...</p>
+                        <button id="btn-arrived-pickup" onclick="arrivedAtPickup()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs shadow-lg transition">ĐÃ ĐẾN ĐIỂM ĐÓN / LẤY HÀNG</button>
                     </div>
 
                     <!-- 4. Thẻ Đang Chở Khách (Giai đoạn 2) -->
-                    <div id="card-dropoff" class="hidden space-y-2">
+                    <div id="card-dropoff" class="hidden space-y-2 bg-slate-800/80 p-3 rounded-2xl border border-red-500/30">
                         <div class="flex justify-between items-center text-xs">
-                            <span class="text-green-400 font-bold"><i class="fa-solid fa-flag-checkered mr-1"></i> ĐANG CHỞ KHÁCH ĐẾN ĐIỂM TRẢ</span>
-                            <span id="dropoff-dist" class="text-slate-400">2.5 km</span>
+                            <span class="text-red-400 font-bold flex items-center"><i class="fa-solid fa-flag-checkered mr-1.5"></i> ĐANG CHỞ KHÁCH TỚI ĐIỂM TRẢ (B)</span>
+                            <span id="dropoff-dist" class="text-slate-300 font-mono font-bold">2.5 km</span>
                         </div>
-                        <p class="text-xs text-slate-200 font-medium">Lái xe tới điểm trả màu đỏ trên bản đồ...</p>
-                        <button id="btn-complete-trip" onclick="completeRide()" class="w-full py-2.5 grab-bg text-white font-extrabold rounded-lg text-xs shadow-md">HOÀN THÀNH CUỐC XE</button>
+                        <p class="text-[11px] text-slate-300">Di chuyển theo vạch chỉ đường đỏ tới Marker B...</p>
+                        <button id="btn-complete-trip" onclick="completeRide()" class="w-full py-2.5 grab-bg text-white font-black rounded-xl text-xs shadow-lg transition">HOÀN THÀNH CUỐC XE</button>
                     </div>
 
                 </div>
             </main>
 
-            <!-- TAB 2: CỬA HÀNG -->
+            <!-- TAB 2: CỬA HÀNG (SHOP & FOOD) -->
             <main id="tab-shop" class="flex-1 p-4 hidden space-y-3 overflow-y-auto">
-                <h2 class="font-bold text-sm text-slate-200 border-b border-slate-800 pb-2"><i class="fa-solid fa-store grab-text mr-1.5"></i> Trạm Xăng & Dịch Vụ</h2>
+                <h2 class="font-black text-sm text-slate-100 border-b border-slate-800 pb-2 flex items-center justify-between">
+                    <span><i class="fa-solid fa-utensils grab-text mr-2"></i>CỬA HÀNG & NĂNG LƯỢNG</span>
+                    <span class="text-xs text-emerald-400 font-normal">Hồi phục thể lực</span>
+                </h2>
                 
-                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 flex justify-between items-center">
-                    <div>
-                        <strong class="text-xs text-slate-200 block">Đổ Đầy Bình Xăng</strong>
-                        <span class="text-[10px] text-slate-400">Nạp lại 100% nhiên liệu</span>
+                <div class="grid grid-cols-1 gap-3">
+                    <!-- Cây xăng -->
+                    <div class="bg-slate-800/80 rounded-2xl overflow-hidden border border-slate-700/60 flex items-center p-3 space-x-3 hover:border-emerald-500/50 transition">
+                        <img src="https://images.unsplash.com/photo-1527018601619-a508a2be00cd?w=200&auto=format&fit=crop&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0" alt="Đổ xăng">
+                        <div class="flex-1">
+                            <strong class="text-xs font-bold text-slate-100 block">Đổ Đầy Bình Xăng 95</strong>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Nạp lại 100% nhiên liệu chạy xe</p>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-xs font-black text-cyan-400">30.000đ</span>
+                                <button onclick="buyFuel()" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold">Nạp ngay</button>
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="buyFuel()" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold">30.000đ</button>
-                </div>
 
-                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 flex justify-between items-center">
-                    <div>
-                        <strong class="text-xs text-slate-200 block">Nước Tăng Lực & Cơm Tấm</strong>
-                        <span class="text-[10px] text-slate-400">Hồi phục sức khỏe tài xế</span>
+                    <!-- Cơm tấm -->
+                    <div class="bg-slate-800/80 rounded-2xl overflow-hidden border border-slate-700/60 flex items-center p-3 space-x-3 hover:border-emerald-500/50 transition">
+                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&auto=format&fit=crop&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0" alt="Cơm tấm">
+                        <div class="flex-1">
+                            <strong class="text-xs font-bold text-slate-100 block">Dĩa Cơm Tấm Sườn Bì Chả</strong>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Hồi phục 100% Sức khỏe tài xế</p>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-xs font-black text-emerald-400">35.000đ</span>
+                                <button onclick="buyHealth()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold">Ăn ngay</button>
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="buyHealth()" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold">25.000đ</button>
-                </div>
 
-                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 flex justify-between items-center">
-                    <div>
-                        <strong class="text-xs text-slate-200 block">Đăng Ký GrabFood & Express</strong>
-                        <span class="text-[10px] text-slate-400">Mở khóa cuốc giao hàng & đồ ăn</span>
+                    <!-- Giấy phép GrabFood -->
+                    <div class="bg-slate-800/80 rounded-2xl overflow-hidden border border-slate-700/60 flex items-center p-3 space-x-3 hover:border-emerald-500/50 transition">
+                        <img src="https://images.unsplash.com/photo-1526367790999-0150786686a2?w=200&auto=format&fit=crop&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0" alt="Giao hàng">
+                        <div class="flex-1">
+                            <strong class="text-xs font-bold text-slate-100 block">Đăng ký GrabFood & Express</strong>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Mở khóa cuốc đồ ăn & giao hàng giá cao</p>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-xs font-black text-amber-400">300.000đ</span>
+                                <button id="btn-unlock-food" onclick="unlockFood()" class="px-3 py-1.5 grab-bg text-white rounded-lg text-xs font-bold">Đăng ký</button>
+                            </div>
+                        </div>
                     </div>
-                    <button id="btn-unlock-food" onclick="unlockFood()" class="px-3 py-1.5 grab-bg text-white rounded-lg text-xs font-bold">300.000đ</button>
                 </div>
             </main>
 
-            <!-- TAB 3: GARA XE -->
+            <!-- TAB 3: GARA XE (GARAGE) -->
             <main id="tab-garage" class="flex-1 p-4 hidden space-y-3 overflow-y-auto">
-                <h2 class="font-bold text-sm text-slate-200 border-b border-slate-800 pb-2"><i class="fa-solid fa-wrench grab-text mr-1.5"></i> Sửa Chữa & Nâng Cấp Xe</h2>
+                <h2 class="font-black text-sm text-slate-100 border-b border-slate-800 pb-2 flex items-center justify-between">
+                    <span><i class="fa-solid fa-wrench grab-text mr-2"></i>GARA VÀ NÂNG CẤP XE</span>
+                    <span id="current-bike-tag" class="text-xs text-amber-400 font-bold">Wave Alpha</span>
+                </h2>
 
-                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 flex justify-between items-center">
-                    <div>
-                        <strong class="text-xs text-slate-200 block">Bảo Dưỡng & Sửa Xe</strong>
-                        <span class="text-[10px] text-slate-400">Khôi phục độ bền xe về 100%</span>
+                <div class="grid grid-cols-1 gap-3">
+                    <!-- Sửa xe -->
+                    <div class="bg-slate-800/80 rounded-2xl p-3 border border-slate-700/60 flex items-center space-x-3">
+                        <img src="https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=200&auto=format&fit=crop&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0" alt="Sửa xe">
+                        <div class="flex-1">
+                            <strong class="text-xs font-bold text-slate-100 block">Bảo Dưỡng & Thay Nhớt Xe</strong>
+                            <p class="text-[10px] text-slate-400">Khôi phục 100% độ bền phương tiện</p>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-xs font-black text-amber-400">50.000đ</span>
+                                <button onclick="repairBike()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold">Sửa xe</button>
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="repairBike()" class="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-bold">50.000đ</button>
-                </div>
 
-                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 flex justify-between items-center">
-                    <div>
-                        <strong class="text-xs text-slate-200 block">Nâng cấp Winner X / Exciter</strong>
-                        <span class="text-[10px] text-slate-400">Tăng 35% tốc độ chạy xe</span>
+                    <!-- Winner X -->
+                    <div class="bg-slate-800/80 rounded-2xl p-3 border border-slate-700/60 flex items-center space-x-3">
+                        <img src="https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=200&auto=format&fit=crop&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0" alt="Winner X">
+                        <div class="flex-1">
+                            <strong class="text-xs font-bold text-slate-100 block">Honda Winner X / Exciter</strong>
+                            <p class="text-[10px] text-slate-400">Tăng 40% tốc độ di chuyển GPS</p>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-xs font-black text-emerald-400">2.500.000đ</span>
+                                <button onclick="upgradeBike('Winner X', 2500000, 1.4)" class="px-3 py-1.5 grab-bg text-white rounded-lg text-xs font-bold">Mua xe</button>
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="upgradeBike('Winner X', 2500000, 1.35)" class="px-3 py-1.5 grab-bg text-white rounded-lg text-xs font-bold">2.500.000đ</button>
+
+                    <!-- SH 350i -->
+                    <div class="bg-slate-800/80 rounded-2xl p-3 border border-slate-700/60 flex items-center space-x-3">
+                        <img src="https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=200&auto=format&fit=crop&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0" alt="SH350i">
+                        <div class="flex-1">
+                            <strong class="text-xs font-bold text-slate-100 block">Honda SH 350i VIP</strong>
+                            <p class="text-[10px] text-slate-400">Tăng 80% tốc độ + Khách tip thêm 20%</p>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-xs font-black text-yellow-400">8.000.000đ</span>
+                                <button onclick="upgradeBike('SH 350i', 8000000, 1.8)" class="px-3 py-1.5 bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg text-xs font-bold">Mua xe</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </main>
 
-            <!-- TAB 4: SAO LƯU DỮ LIỆU -->
+            <!-- TAB 4: SAO LƯU (SAVE/LOAD) -->
             <main id="tab-save" class="flex-1 p-4 hidden space-y-3 overflow-y-auto">
-                <h2 class="font-bold text-sm text-slate-200 border-b border-slate-800 pb-2"><i class="fa-solid fa-floppy-disk grab-text mr-1.5"></i> Quản Lý Dữ Liệu</h2>
+                <h2 class="font-black text-sm text-slate-100 border-b border-slate-800 pb-2"><i class="fa-solid fa-floppy-disk grab-text mr-2"></i>SAO LƯU TIẾN TRÌNH</h2>
 
-                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 space-y-2">
-                    <strong class="text-xs text-slate-200 block">1. Xuất Mã Sao Lưu (Export)</strong>
-                    <textarea id="export-textarea" class="w-full text-[10px] p-2 bg-slate-900 border border-slate-700 rounded text-slate-300 font-mono h-16" readonly></textarea>
-                    <button onclick="copySaveCode()" class="w-full py-1.5 grab-bg text-white rounded text-xs font-bold"><i class="fa-solid fa-copy mr-1"></i> Copy Mã Sao Lưu</button>
+                <div class="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/60 space-y-2">
+                    <strong class="text-xs font-bold text-slate-200 block">1. Xuất Mã Sao Lưu (Export Save)</strong>
+                    <p class="text-[10px] text-slate-400">Copy đoạn mã bên dưới để lưu giữ tiến trình khi đổi thiết bị:</p>
+                    <textarea id="export-textarea" class="w-full text-[10px] p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-300 font-mono h-16 outline-none focus:border-emerald-500" readonly></textarea>
+                    <button onclick="copySaveCode()" class="w-full py-2 grab-bg text-white rounded-xl text-xs font-bold shadow-md"><i class="fa-solid fa-copy mr-1.5"></i>Sao Chép Mã Sao Lưu</button>
                 </div>
 
-                <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 space-y-2">
-                    <strong class="text-xs text-slate-200 block">2. Nhập Mã Khôi Phục (Import)</strong>
-                    <textarea id="import-textarea" class="w-full text-[10px] p-2 bg-slate-900 border border-slate-700 rounded text-slate-300 font-mono h-16" placeholder="Dán mã sao lưu vào đây..."></textarea>
-                    <button onclick="importSaveCode()" class="w-full py-1.5 bg-blue-600 text-white rounded text-xs font-bold"><i class="fa-solid fa-upload mr-1"></i> Khôi Phục Dữ Liệu</button>
+                <div class="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/60 space-y-2">
+                    <strong class="text-xs font-bold text-slate-200 block">2. Nhập Mã Khôi Phục (Import Save)</strong>
+                    <p class="text-[10px] text-slate-400">Dán đoạn mã sao lưu đã lưu trước đó vào đây:</p>
+                    <textarea id="import-textarea" class="w-full text-[10px] p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-300 font-mono h-16 outline-none focus:border-cyan-500" placeholder="Dán mã sao lưu vào đây..."></textarea>
+                    <button onclick="importSaveCode()" class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold shadow-md"><i class="fa-solid fa-upload mr-1.5"></i>Khôi Phục Dữ Liệu</button>
                 </div>
 
-                <button onclick="resetData()" class="w-full py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-xl text-xs font-bold mt-4"><i class="fa-solid fa-trash mr-1"></i> Xóa Dữ Liệu & Chơi Lại Từ Đầu</button>
+                <button onclick="resetData()" class="w-full py-2.5 bg-red-600/80 hover:bg-red-600 text-white rounded-xl text-xs font-bold mt-4 transition"><i class="fa-solid fa-trash mr-1.5"></i>Xóa Toàn Bộ Dữ Liệu & Chơi Lại</button>
             </main>
 
         </div>
 
-        <!-- BOTTOM NAV BAR FIXED -->
-        <nav class="bg-slate-900 border-t border-slate-800 flex justify-around py-2.5 px-2 shrink-0 z-30">
+        <!-- BOTTOM NAV BAR -->
+        <nav class="bg-slate-900 border-t border-slate-800 flex justify-around py-2.5 px-2 shrink-0 z-40">
             <button onclick="switchTab('map')" id="nav-map" class="flex flex-col items-center grab-text text-[11px] font-bold">
-                <i class="fa-solid fa-map-location-dot text-base mb-0.5"></i>
+                <i class="fa-solid fa-map-location-dot text-lg mb-0.5"></i>
                 <span>Bản đồ</span>
             </button>
             <button onclick="switchTab('shop')" id="nav-shop" class="flex flex-col items-center text-slate-400 text-[11px] font-bold hover:text-slate-200">
-                <i class="fa-solid fa-store text-base mb-0.5"></i>
+                <i class="fa-solid fa-store text-lg mb-0.5"></i>
                 <span>Cửa hàng</span>
             </button>
             <button onclick="switchTab('garage')" id="nav-garage" class="flex flex-col items-center text-slate-400 text-[11px] font-bold hover:text-slate-200">
-                <i class="fa-solid fa-wrench text-base mb-0.5"></i>
+                <i class="fa-solid fa-wrench text-lg mb-0.5"></i>
                 <span>Gara</span>
             </button>
             <button onclick="switchTab('save')" id="nav-save" class="flex flex-col items-center text-slate-400 text-[11px] font-bold hover:text-slate-200">
-                <i class="fa-solid fa-floppy-disk text-base mb-0.5"></i>
+                <i class="fa-solid fa-floppy-disk text-lg mb-0.5"></i>
                 <span>Sao lưu</span>
             </button>
         </nav>
@@ -244,23 +316,34 @@
             appActive: false
         };
 
-        // --- RIDE & MAP STATE ---
-        let currentRide = null;
-        let rideStage = 0; // 0: None, 1: Heading to Pickup A, 2: Heading to Dropoff B
-        let driverPos = { x: 200, y: 200 };
-        let targetPos = null;
-        let pickupPos = null;
-        let dropoffPos = null;
+        // --- MAP & RIDE STATE ---
+        let map = null;
+        let dayTileLayer = null;
+        let nightTileLayer = null;
 
-        // Sound generator
+        let driverLatLng = [10.7769, 106.7009]; // Chợ Bến Thành, Q.1
+        let pickupLatLng = null;
+        let dropoffLatLng = null;
+
+        let driverMarker = null;
+        let pickupMarker = null;
+        let dropoffMarker = null;
+        let routePolyline = null;
+
+        let currentRide = null;
+        let rideStage = 0; // 0: None, 1: Pickup A, 2: Dropoff B
+        let animationFrameId = null;
+
+        // Âm thanh Beep giả lập
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playBeep(freq = 800, duration = 0.15) {
+        function playBeep(freq = 880, duration = 0.2) {
             try {
                 if (audioCtx.state === 'suspended') audioCtx.resume();
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
+                osc.type = 'sine';
                 osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
@@ -271,12 +354,12 @@
 
         // --- SAVE / LOAD SYSTEM ---
         function saveGame() {
-            localStorage.setItem('grab_gps_save_v2', JSON.stringify(state));
+            localStorage.setItem('grab_real_gps_save_v3', JSON.stringify(state));
             updateExportTextarea();
         }
 
         function loadGame() {
-            const saved = localStorage.getItem('grab_gps_save_v2');
+            const saved = localStorage.getItem('grab_real_gps_save_v3');
             if (saved) {
                 try { state = Object.assign(state, JSON.parse(saved)); } catch(e){}
             }
@@ -294,7 +377,7 @@
             const textarea = document.getElementById('export-textarea');
             textarea.select();
             document.execCommand('copy');
-            showToast('Đã sao chép mã lưu vào clipboard!');
+            showToast('Đã copy mã sao lưu vào bộ nhớ tạm!');
         }
 
         function importSaveCode() {
@@ -315,8 +398,8 @@
         }
 
         function resetData() {
-            if (confirm('Bạn chắc chắn muốn xóa dữ liệu chơi lại từ đầu?')) {
-                localStorage.removeItem('grab_gps_save_v2');
+            if (confirm('Bạn có chắc chắn muốn xóa toàn bộ tiến trình để chơi lại?')) {
+                localStorage.removeItem('grab_real_gps_save_v3');
                 location.reload();
             }
         }
@@ -337,15 +420,16 @@
             document.getElementById('day-badge').innerText = `Ngày ${state.day}`;
             document.getElementById('time-clock').innerText = 
                 `${String(state.timeHour).padStart(2,'0')}:${String(state.timeMinute).padStart(2,'0')}`;
+            document.getElementById('current-bike-tag').innerText = state.bikeName;
 
             if (state.hasFoodLicense) {
                 const btn = document.getElementById('btn-unlock-food');
-                if (btn) { btn.innerText = 'Đã Mở Khoá'; btn.disabled = true; btn.className = 'px-3 py-1.5 bg-slate-700 text-slate-400 rounded-lg text-xs font-bold'; }
+                if (btn) { btn.innerText = 'Đã Đăng Ký'; btn.disabled = true; btn.className = 'px-3 py-1.5 bg-slate-700 text-slate-400 rounded-lg text-xs font-bold'; }
             }
             updateExportTextarea();
         }
 
-        // --- APP TOGGLE ---
+        // --- BẬT / TẮT APP GRAB ---
         function toggleAppStatus() {
             state.appActive = !state.appActive;
             const btn = document.getElementById('btn-toggle-app');
@@ -354,49 +438,82 @@
 
             if (state.appActive) {
                 btn.innerText = 'TẮT APP';
-                btn.className = 'px-4 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold shadow-md';
-                dot.className = 'w-3 h-3 rounded-full bg-green-500 animate-ping';
+                btn.className = 'px-5 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-red-600/30 transition';
+                dot.className = 'w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-ping';
                 txt.innerText = 'Đang Trực Tuyến';
-                showToast('Đã bật App! Đang tìm cuốc xe...');
+                showToast('Đã bật App! Đang quét đơn hàng xung quanh...');
+                setTimeout(spawnRandomRide, 2000);
             } else {
                 btn.innerText = 'BẬT APP';
-                btn.className = 'px-4 py-1.5 bg-green-600 text-white rounded-lg text-xs font-bold shadow-md';
-                dot.className = 'w-3 h-3 rounded-full bg-red-500';
+                btn.className = 'px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-emerald-600/30 transition';
+                dot.className = 'w-3.5 h-3.5 rounded-full bg-red-500 shadow-lg shadow-red-500/50';
                 txt.innerText = 'Đang Ngoại Tuyến';
                 if (currentRide && rideStage === 0) declineRide();
             }
         }
 
-        // --- RIDE GENERATOR & STAGES ---
+        // --- KHỞI TẠO BẢN ĐỒ REAL WORLD (LEAFLET GPS) ---
+        function initRealMap() {
+            map = L.map('leafletMap', { zoomControl: false }).setView(driverLatLng, 15);
+
+            // BẢN ĐỒ NGÀY & ĐÊM REAL
+            dayTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+            nightTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+
+            dayTileLayer.addTo(map);
+
+            // CUSTOM MARKER XE GRAB
+            const driverIcon = L.divIcon({
+                className: 'driver-marker-icon bg-emerald-500 text-white w-9 h-9 border-2 border-white',
+                html: '<i class="fa-solid fa-motorcycle text-base"></i>',
+                iconSize: [36, 36],
+                iconAnchor: [18, 18]
+            });
+            driverMarker = L.marker(driverLatLng, { icon: driverIcon }).addTo(map);
+        }
+
+        function updateMapTheme() {
+            if (!map) return;
+            if (state.timeHour >= 6 && state.timeHour < 18) {
+                if (map.hasLayer(nightTileLayer)) map.removeLayer(nightTileLayer);
+                if (!map.hasLayer(dayTileLayer)) dayTileLayer.addTo(map);
+                document.getElementById('weather-text').innerHTML = '<i class="fa-solid fa-sun text-yellow-300 mr-1"></i> Sài Gòn Nắng Đẹp';
+            } else {
+                if (map.hasLayer(dayTileLayer)) map.removeLayer(dayTileLayer);
+                if (!map.hasLayer(nightTileLayer)) nightTileLayer.addTo(map);
+                document.getElementById('weather-text').innerHTML = '<i class="fa-solid fa-moon text-blue-300 mr-1"></i> Sài Gòn Về Đêm';
+            }
+        }
+
+        // --- TẠO ĐƠN HÀNG NGẪU NHIÊN ---
         function spawnRandomRide() {
             if (!state.appActive || currentRide || state.fuel <= 5 || state.health <= 5) return;
 
-            const cvs = document.getElementById('gpsCanvas');
-            const w = cvs.width || 300;
-            const h = cvs.height || 400;
+            // Tạo điểm A & B xung quanh vị trí xe hiện tại
+            const latOffsetA = (Math.random() - 0.5) * 0.015;
+            const lngOffsetA = (Math.random() - 0.5) * 0.015;
+            pickupLatLng = [driverLatLng[0] + latOffsetA, driverLatLng[1] + lngOffsetA];
 
-            pickupPos = {
-                x: Math.floor(Math.random() * (w - 80)) + 40,
-                y: Math.floor(Math.random() * (h - 120)) + 60
-            };
-            dropoffPos = {
-                x: Math.floor(Math.random() * (w - 80)) + 40,
-                y: Math.floor(Math.random() * (h - 120)) + 60
-            };
+            const latOffsetB = (Math.random() - 0.5) * 0.025;
+            const lngOffsetB = (Math.random() - 0.5) * 0.025;
+            dropoffLatLng = [pickupLatLng[0] + latOffsetB, pickupLatLng[1] + lngOffsetB];
 
-            const dx = dropoffPos.x - pickupPos.x;
-            const dy = dropoffPos.y - pickupPos.y;
-            const distKm = (Math.sqrt(dx*dx + dy*dy) / 40).toFixed(1);
-            const price = Math.round(distKm * 8000 + 15000);
+            // Tính khoảng cách
+            const distMeters = map.distance(pickupLatLng, dropoffLatLng);
+            const distKm = (distMeters / 1000).toFixed(1);
+            const price = Math.round(distKm * 10000 + 15000);
 
-            const names = ['Lê Văn Nam', 'Trần Thị Mai', 'Nguyễn Quốc Bảo', 'Phạm Minh Anh'];
-            const notes = ['Chạy nhanh giúp em!', 'Có mang đồ cồng kềnh', 'Chạy êm em thưởng thêm'];
+            const names = ['Lê Văn Nam', 'Trần Thị Mai', 'Nguyễn Quốc Bảo', 'Phạm Minh Anh', 'Hoàng Gia Huy'];
+            const notes = ['Chạy nhanh giúp em!', 'Có mang đồ cồng kềnh', 'Chạy êm em thưởng thêm', 'Gửi đồ gấp ạ'];
+            const places = ['Chợ Bến Thành', 'Phố Đi Bộ Nguyễn Huệ', 'Landmark 81', 'Nhà Bè', 'Sân Bay Tân Sơn Nhất', 'Đại Học Bách Khoa'];
 
             currentRide = {
                 type: state.hasFoodLicense && Math.random() > 0.5 ? 'GrabFood' : 'GrabBike',
                 price: price,
                 customer: names[Math.floor(Math.random() * names.length)],
                 note: notes[Math.floor(Math.random() * notes.length)],
+                from: places[Math.floor(Math.random() * places.length)],
+                to: places[Math.floor(Math.random() * places.length)],
                 dist: distKm
             };
 
@@ -405,109 +522,159 @@
 
             document.getElementById('offer-type').innerText = currentRide.type;
             document.getElementById('offer-price').innerText = currentRide.price.toLocaleString() + 'đ';
-            document.getElementById('offer-customer').innerText = `Khách: ${currentRide.customer}`;
+            document.getElementById('offer-customer').innerText = `Khách: ${currentRide.customer} (4.9★)`;
             document.getElementById('offer-note').innerText = `"${currentRide.note}"`;
-            document.getElementById('offer-from').innerText = `Điểm đón (A) - Tọa độ [${Math.round(pickupPos.x)}, ${Math.round(pickupPos.y)}]`;
-            document.getElementById('offer-to').innerText = `Điểm trả (B) - Quãng đường ${distKm} km`;
+            document.getElementById('offer-from').innerText = `${currentRide.from} (Điểm A)`;
+            document.getElementById('offer-to').innerText = `${currentRide.to} (${distKm} km)`;
 
-            playBeep(900, 0.2);
+            playBeep(950, 0.25);
         }
 
         function declineRide() {
+            clearMapMarkers();
             currentRide = null;
-            pickupPos = null;
-            dropoffPos = null;
             rideStage = 0;
             document.getElementById('card-offer').classList.add('hidden');
+            document.getElementById('card-pickup').classList.add('hidden');
+            document.getElementById('card-dropoff').classList.add('hidden');
             document.getElementById('card-idle').classList.remove('hidden');
         }
 
         function acceptRide() {
             if (!currentRide) return;
-            rideStage = 1; // Heading to A
-            targetPos = pickupPos;
+            rideStage = 1; // Stage 1: Move to A
+
+            // Vẽ Marker A
+            const iconA = L.divIcon({
+                className: 'pin-a-icon bg-emerald-500 text-white w-8 h-8 font-extrabold border-2 border-white',
+                html: 'A', iconSize: [32, 32], iconAnchor: [16, 16]
+            });
+            pickupMarker = L.marker(pickupLatLng, { icon: iconA }).addTo(map);
+
+            // Vẽ Đường chỉ dẫn xanh
+            routePolyline = L.polyline([driverLatLng, pickupLatLng], { color: '#10b981', weight: 5, dashArray: '8, 8' }).addTo(map);
+            map.fitBounds(L.latLngBounds([driverLatLng, pickupLatLng]), { padding: [40, 40] });
 
             document.getElementById('card-offer').classList.add('hidden');
             document.getElementById('card-pickup').classList.remove('hidden');
-            showToast('Đã nhận đơn! Lái xe đến vị trí đón màu XANH LÁ.');
-            playBeep(1100, 0.15);
+            document.getElementById('pickup-dist').innerText = `${(map.distance(driverLatLng, pickupLatLng)/1000).toFixed(1)} km`;
+
+            showToast('Đã nhận đơn! Lái xe đến điểm đón màu xanh lá.');
+            playBeep(1100, 0.2);
+            animateDriverToTarget(pickupLatLng, arrivedAtPickup);
         }
 
         function arrivedAtPickup() {
             if (rideStage !== 1) return;
-            rideStage = 2; // Heading to B
-            targetPos = dropoffPos;
+            rideStage = 2; // Stage 2: Move to B
+
+            if (pickupMarker) map.removeLayer(pickupMarker);
+            if (routePolyline) map.removeLayer(routePolyline);
+
+            // Vẽ Marker B
+            const iconB = L.divIcon({
+                className: 'pin-b-icon bg-red-500 text-white w-8 h-8 font-extrabold border-2 border-white',
+                html: 'B', iconSize: [32, 32], iconAnchor: [16, 16]
+            });
+            dropoffMarker = L.marker(dropoffLatLng, { icon: iconB }).addTo(map);
+
+            // Vẽ Đường chỉ dẫn đỏ
+            routePolyline = L.polyline([driverLatLng, dropoffLatLng], { color: '#ef4444', weight: 5, dashArray: '8, 8' }).addTo(map);
+            map.fitBounds(L.latLngBounds([driverLatLng, dropoffLatLng]), { padding: [40, 40] });
 
             document.getElementById('card-pickup').classList.add('hidden');
             document.getElementById('card-dropoff').classList.remove('hidden');
-            showToast('Đã đón khách! Lái xe đến vị trí trả màu ĐỎ.');
+            document.getElementById('dropoff-dist').innerText = `${currentRide.dist} km`;
+
+            showToast('Đã đón khách! Lái xe đến vị trí trả màu đỏ.');
             playBeep(1200, 0.2);
+            animateDriverToTarget(dropoffLatLng, completeRide);
         }
 
         function completeRide() {
             if (rideStage !== 2 || !currentRide) return;
 
             state.money += currentRide.price;
-            state.fuel = Math.max(0, state.fuel - currentRide.dist * 2.2);
-            state.health = Math.max(0, state.health - currentRide.dist * 1.5);
-            
-            const ratingAdd = (Math.random() * 0.8 + 4.2);
+            state.fuel = Math.max(0, state.fuel - currentRide.dist * 2.0);
+            state.health = Math.max(0, state.health - currentRide.dist * 1.2);
+
+            const ratingAdd = (Math.random() * 0.5 + 4.5);
             state.rating = ((state.rating * state.ratingsCount) + ratingAdd) / (state.ratingsCount + 1);
             state.ratingsCount++;
 
             showToast(`Hoàn thành! +${currentRide.price.toLocaleString()}đ (+${ratingAdd.toFixed(1)}⭐)`);
-            playBeep(700, 0.25);
+            playBeep(750, 0.3);
 
             declineRide();
             saveGame();
             updateUI();
         }
 
-        // --- SHOP & GARAGE ACTIONS ---
+        function animateDriverToTarget(targetLatLng, onReach) {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+            function step() {
+                const speed = 0.00012 * state.speedMultiplier;
+                const dLat = targetLatLng[0] - driverLatLng[0];
+                const dLng = targetLatLng[1] - driverLatLng[1];
+                const dist = Math.sqrt(dLat*dLat + dLng*dLng);
+
+                if (dist > speed) {
+                    driverLatLng[0] += (dLat / dist) * speed;
+                    driverLatLng[1] += (dLng / dist) * speed;
+                    driverMarker.setLatLng(driverLatLng);
+                    if (routePolyline) routePolyline.setLatLngs([driverLatLng, targetLatLng]);
+                    animationFrameId = requestAnimationFrame(step);
+                } else {
+                    driverLatLng = [...targetLatLng];
+                    driverMarker.setLatLng(driverLatLng);
+                    if (onReach) onReach();
+                }
+            }
+            step();
+        }
+
+        function clearMapMarkers() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            if (pickupMarker) map.removeLayer(pickupMarker);
+            if (dropoffMarker) map.removeLayer(dropoffMarker);
+            if (routePolyline) map.removeLayer(routePolyline);
+        }
+
+        // --- HÀM CỬA HÀNG & GARA ---
         function buyFuel() {
             if (state.money < 30000) return showToast('Không đủ tiền!');
             if (state.fuel >= 99) return showToast('Bình xăng đã đầy!');
-            state.money -= 30000;
-            state.fuel = 100;
-            saveGame(); updateUI();
-            showToast('Đã đổ đầy bình xăng!');
+            state.money -= 30000; state.fuel = 100;
+            saveGame(); updateUI(); showToast('Đã đổ đầy bình xăng!');
         }
 
         function buyHealth() {
-            if (state.money < 25000) return showToast('Không đủ tiền!');
-            if (state.health >= 99) return showToast('Sức khỏe đang rất tốt!');
-            state.money -= 25000;
-            state.health = 100;
-            saveGame(); updateUI();
-            showToast('Đã hồi phục sức khỏe!');
+            if (state.money < 35000) return showToast('Không đủ tiền!');
+            if (state.health >= 99) return showToast('Thể lực đang rất tốt!');
+            state.money -= 35000; state.health = 100;
+            saveGame(); updateUI(); showToast('Đã khôi phục 100% Sức khỏe!');
         }
 
         function unlockFood() {
             if (state.money < 300000) return showToast('Cần 300.000đ để đăng ký!');
-            state.money -= 300000;
-            state.hasFoodLicense = true;
-            saveGame(); updateUI();
-            showToast('Đã đăng ký thành công GrabFood & Express!');
+            state.money -= 300000; state.hasFoodLicense = true;
+            saveGame(); updateUI(); showToast('Đăng ký thành công GrabFood!');
         }
 
         function repairBike() {
             if (state.money < 50000) return showToast('Không đủ tiền!');
-            state.money -= 50000;
-            state.health = 100;
-            saveGame(); updateUI();
-            showToast('Đã bảo dưỡng xe thành công!');
+            state.money -= 50000; state.health = 100;
+            saveGame(); updateUI(); showToast('Xe đã bảo dưỡng như mới!');
         }
 
         function upgradeBike(name, price, speed) {
-            if (state.money < price) return showToast('Chưa đủ tiền nâng cấp!');
-            state.money -= price;
-            state.bikeName = name;
-            state.speedMultiplier = speed;
-            saveGame(); updateUI();
-            showToast(`Đã nâng cấp lên xe ${name}!`);
+            if (state.money < price) return showToast('Chưa đủ tiền mua xe này!');
+            state.money -= price; state.bikeName = name; state.speedMultiplier = speed;
+            saveGame(); updateUI(); showToast(`Chúc mừng bạn đã sở hữu ${name}!`);
         }
 
-        // --- TAB NAVIGATION ---
+        // --- ĐỔI TAB ---
         function switchTab(tab) {
             ['map', 'shop', 'garage', 'save'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
@@ -515,145 +682,33 @@
             });
             document.getElementById(`tab-${tab}`).classList.remove('hidden');
             document.getElementById(`nav-${tab}`).className = 'flex flex-col items-center grab-text text-[11px] font-bold';
+            if (tab === 'map' && map) setTimeout(() => map.invalidateSize(), 200);
         }
 
-        // --- GPS CANVAS RENDERER & TIME LOOP ---
-        function initCanvas() {
-            const cvs = document.getElementById('gpsCanvas');
-            const parent = cvs.parentElement;
-            cvs.width = parent.clientWidth;
-            cvs.height = parent.clientHeight;
-
-            driverPos = { x: cvs.width / 2, y: cvs.height / 2 };
-        }
-
-        function drawMap() {
-            const cvs = document.getElementById('gpsCanvas');
-            if (!cvs) return;
-            const ctx = cvs.getContext('2d');
-            const w = cvs.width;
-            const h = cvs.height;
-
-            // MÀU BẦU TRỜI & BẢN ĐỒ THEO GIỜ
-            let bgStyle = '#1e293b'; // Đêm / Mặc định
-            let roadColor = '#334155';
-            let gridColor = '#475569';
-
-            if (state.timeHour >= 6 && state.timeHour < 11) { // Sáng
-                bgStyle = '#0f172a'; roadColor = '#1e293b'; gridColor = '#334155';
-                document.getElementById('weather-text').innerHTML = '<i class="fa-solid fa-sun text-yellow-400 mr-1"></i>Nắng sớm nhẹ nhàng';
-            } else if (state.timeHour >= 11 && state.timeHour < 16) { // Trưa
-                bgStyle = '#0284c7'; roadColor = '#0369a1'; gridColor = '#38bdf8';
-                document.getElementById('weather-text').innerHTML = '<i class="fa-solid fa-sun text-yellow-300 mr-1"></i>Trời nắng gắt';
-            } else if (state.timeHour >= 16 && state.timeHour < 18) { // Hoàng hôn
-                bgStyle = '#7c2d12'; roadColor = '#9a3412'; gridColor = '#fb923c';
-                document.getElementById('weather-text').innerHTML = '<i class="fa-solid fa-cloud-sun text-orange-400 mr-1"></i>Chiều hoàng hôn';
-            } else { // Tối
-                bgStyle = '#090d16'; roadColor = '#111827'; gridColor = '#1f2937';
-                document.getElementById('weather-text').innerHTML = '<i class="fa-solid fa-moon text-blue-300 mr-1"></i>Đêm muộn mát mẻ';
-            }
-
-            ctx.fillStyle = bgStyle;
-            ctx.fillRect(0, 0, w, h);
-
-            // MẠNG LƯỚI ĐƯỜNG XÁ
-            ctx.strokeStyle = roadColor;
-            ctx.lineWidth = 14;
-            ctx.beginPath();
-            for (let x = 40; x < w; x += 80) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
-            for (let y = 40; y < h; y += 80) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
-            ctx.stroke();
-
-            // VẠCH KẺ ĐƯỜNG
-            ctx.strokeStyle = gridColor;
-            ctx.lineWidth = 1;
-            ctx.setLineDash([4, 4]);
-            ctx.beginPath();
-            for (let x = 40; x < w; x += 80) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
-            for (let y = 40; y < h; y += 80) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            // DI CHUYỂN TỰ ĐỘNG CỦA XE THEO MỤC TIÊU
-            if (targetPos) {
-                const dx = targetPos.x - driverPos.x;
-                const dy = targetPos.y - driverPos.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                const speed = 1.8 * state.speedMultiplier;
-
-                if (dist > speed) {
-                    driverPos.x += (dx / dist) * speed;
-                    driverPos.y += (dy / dist) * speed;
-                } else {
-                    driverPos.x = targetPos.x;
-                    driverPos.y = targetPos.y;
-                }
-            }
-
-            // VẼ ĐƯỜNG ĐỊNH VỊ (ROUTE LINE)
-            if (rideStage === 1 && pickupPos) {
-                ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.moveTo(driverPos.x, driverPos.y); ctx.lineTo(pickupPos.x, pickupPos.y); ctx.stroke();
-            } else if (rideStage === 2 && dropoffPos) {
-                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.moveTo(driverPos.x, driverPos.y); ctx.lineTo(dropoffPos.x, dropoffPos.y); ctx.stroke();
-            }
-
-            // VẼ ĐIỂM ĐÓN (A) & ĐIỂM TRẢ (B)
-            if (pickupPos) {
-                ctx.fillStyle = '#22c55e';
-                ctx.beginPath(); ctx.arc(pickupPos.x, pickupPos.y, 10, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
-                ctx.fillText('A', pickupPos.x, pickupPos.y + 3.5);
-            }
-
-            if (dropoffPos) {
-                ctx.fillStyle = '#ef4444';
-                ctx.beginPath(); ctx.arc(dropoffPos.x, dropoffPos.y, 10, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
-                ctx.fillText('B', dropoffPos.x, dropoffPos.y + 3.5);
-            }
-
-            // VẼ XE GRAB CỦA TÀI XẾ
-            ctx.fillStyle = '#00b14f';
-            ctx.beginPath(); ctx.arc(driverPos.x, driverPos.y, 12, 0, Math.PI * 2); ctx.fill();
-            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
-            ctx.fillStyle = '#ffffff'; ctx.font = '10px FontAwesome'; ctx.textAlign = 'center';
-            ctx.fillText('🛵', driverPos.x, driverPos.y + 3.5);
-
-            requestAnimationFrame(drawMap);
-        }
-
-        // CLOCK LOOP
+        // CLOCK LOOP (Thời gian trôi)
         setInterval(() => {
-            // Khi đang chạy đơn thời gian trôi nhanh hơn
-            const addMins = (rideStage > 0) ? 3 : 1;
-            state.timeMinute += addMins;
-
+            state.timeMinute += (rideStage > 0) ? 4 : 1;
             if (state.timeMinute >= 60) {
                 state.timeHour += Math.floor(state.timeMinute / 60);
                 state.timeMinute %= 60;
             }
-
             if (state.timeHour >= 22) {
-                state.timeHour = 6;
-                state.day++;
+                state.timeHour = 6; state.day++;
                 showToast(`Nghỉ đêm! Bước sang Ngày ${state.day}`);
             }
 
-            // Thử ngẫu nhiên phát cuốc
-            if (state.appActive && !currentRide && Math.random() < 0.3) {
+            updateMapTheme();
+            updateUI();
+
+            // Tự động nổ đơn nếu đang bật App
+            if (state.appActive && !currentRide && Math.random() < 0.4) {
                 spawnRandomRide();
             }
-
-            updateUI();
-        }, 1200);
+        }, 1500);
 
         window.onload = () => {
-            initCanvas();
+            initRealMap();
             loadGame();
-            drawMap();
-            window.addEventListener('resize', initCanvas);
         };
     </script>
 </body>
