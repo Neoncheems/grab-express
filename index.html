@@ -12,7 +12,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=Lexend:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Lexend', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
         .pink-grad { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); }
-        .gold-grad { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
         .pink-text { color: #ff477e; }
         .pulse-btn { animation: pulse 1.6s infinite; }
         @keyframes pulse {
@@ -20,7 +19,6 @@
             70% { transform: scale(1.03); box-shadow: 0 0 0 10px rgba(255, 71, 126, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 71, 126, 0); }
         }
-        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #fda4af; border-radius: 10px; }
     </style>
@@ -30,7 +28,7 @@
     <!-- GAME CONTAINER -->
     <div class="w-full max-w-md bg-slate-900 h-screen md:h-[880px] md:rounded-3xl shadow-2xl flex flex-col relative overflow-hidden border border-rose-900/40">
         
-        <!-- HEADER TRẠNG THÁI CAO CẤP -->
+        <!-- HEADER TRẠNG THÁI -->
         <header class="pink-grad text-white p-3 pt-3.5 shadow-xl z-30 shrink-0 relative">
             <div class="flex justify-between items-center mb-1.5">
                 <div class="flex items-center space-x-2">
@@ -73,13 +71,6 @@
         <div id="toast" class="hidden absolute top-28 left-4 right-4 z-50 bg-slate-900/95 text-white p-3 rounded-2xl shadow-2xl border border-rose-500/50 text-xs flex items-center space-x-2.5 backdrop-blur-md">
             <i class="fa-solid fa-bell text-rose-400 text-base"></i>
             <span id="toast-msg" class="font-medium">Thông báo...</span>
-        </div>
-
-        <!-- POPUP SỰ CỐ / THỦ TỤC BAN ĐẦU / ĐÁNH GIÁ -->
-        <div id="modal-overlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div id="modal-content" class="bg-slate-900 border border-rose-500/40 w-full rounded-3xl p-4 space-y-3 text-slate-200 text-xs shadow-2xl">
-                <!-- Nội dung Modal được nạp bằng JS -->
-            </div>
         </div>
 
         <!-- MÀN HÌNH CHÍNH (POV GAMING CANVAS) -->
@@ -159,26 +150,19 @@
 
                 <div class="bg-slate-900 p-2.5 rounded-2xl border border-slate-800 space-y-2">
                     <strong class="text-[11px] text-rose-300 block">Danh Sách 15 Lọ Sơn Đang Đặt Trên Bàn POV:</strong>
-                    <div id="active-desk-polishes" class="grid grid-cols-5 gap-1.5 text-[9px] font-bold">
-                        <!-- Render bằng JS -->
-                    </div>
+                    <div id="active-desk-polishes" class="grid grid-cols-5 gap-1.5 text-[9px] font-bold"></div>
                 </div>
 
                 <div class="bg-slate-900 p-2.5 rounded-2xl border border-slate-800 space-y-2">
                     <strong class="text-[11px] text-slate-300 block">Tủ Sơn Trong Kho (Bấm vào lọ kho để đổi lên bàn):</strong>
-                    <div id="warehouse-polishes-list" class="grid grid-cols-2 gap-2 text-[10px]">
-                        <!-- Render bằng JS -->
-                    </div>
+                    <div id="warehouse-polishes-list" class="grid grid-cols-1 gap-2 text-[10px]"></div>
                 </div>
             </main>
 
             <!-- TAB 3: THIẾT LẬP GIÁ & TÙY CHỈNH DỊCH VỤ -->
             <main id="tab-pricing" class="flex-1 p-3 hidden space-y-3 overflow-y-auto">
                 <h2 class="font-extrabold text-xs text-slate-200 border-b border-slate-800 pb-2"><i class="fa-solid fa-tags pink-text mr-1.5"></i>THIẾT LẬP GIÁ BÁN DỊCH VỤ THỰC TẾ</h2>
-
-                <div id="pricing-settings-list" class="space-y-2.5">
-                    <!-- Render các slider chỉnh giá thực tế bằng JS -->
-                </div>
+                <div id="pricing-settings-list" class="space-y-2.5"></div>
             </main>
 
             <!-- TAB 4: NHÂN VIÊN & QUẢN LÝ (STAFF) -->
@@ -187,27 +171,21 @@
                     <span><i class="fa-solid fa-users pink-text mr-1.5"></i>QUẢN LÝ NHÂN VIÊN</span>
                     <button onclick="triggerWeeklyReview()" class="text-[10px] bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded border border-purple-700">Đánh giá tuần</button>
                 </h2>
-
-                <div id="staff-list-container" class="space-y-2">
-                    <!-- Render danh sách nhân viên bằng JS -->
-                </div>
+                <div id="staff-list-container" class="space-y-2"></div>
             </main>
 
             <!-- TAB 5: ĐÁNH GIÁ (REVIEWS) & ĐỀN BÙ VOUCHER -->
             <main id="tab-reviews" class="flex-1 p-3 hidden space-y-3 overflow-y-auto">
                 <h2 class="font-extrabold text-xs text-slate-200 border-b border-slate-800 pb-2"><i class="fa-solid fa-star text-yellow-400 mr-1.5"></i>ĐÁNH GIÁ TỪ KHÁCH HÀNG REAL</h2>
-
-                <div id="reviews-list-container" class="space-y-2">
-                    <!-- Render reviews bằng JS -->
-                </div>
+                <div id="reviews-list-container" class="space-y-2"></div>
             </main>
 
-            <!-- TAB 6: CAI ĐẶT & HƯỚNG DẪN (SETTINGS & GUIDE) -->
+            <!-- TAB 6: CÀI ĐẶT & HƯỚNG DẪN -->
             <main id="tab-settings" class="flex-1 p-3 hidden space-y-3 overflow-y-auto">
                 <h2 class="font-extrabold text-xs text-slate-200 border-b border-slate-800 pb-2"><i class="fa-solid fa-sliders pink-text mr-1.5"></i>CÀI ĐẶT & HƯỚNG DẪN CHƠI</h2>
 
                 <div class="bg-slate-900 p-3 rounded-2xl border border-slate-800 space-y-2 text-xs">
-                    <strong class="text-rose-300 block">Âm Âm Nhạc & Âm Thanh (Web Audio API)</strong>
+                    <strong class="text-rose-300 block">Âm Nhạc & Âm Thanh (Web Audio API)</strong>
                     <div class="flex justify-between items-center">
                         <span>Nhạc nền Lo-Fi Chill:</span>
                         <button id="btn-toggle-bgm" onclick="toggleBGM()" class="px-3 py-1 bg-emerald-600 text-white rounded text-[10px] font-bold">BẬT BGM</button>
@@ -227,7 +205,7 @@
 
         </div>
 
-        <!-- BOTTOM NAV BAR FIXED -->
+        <!-- BOTTOM NAV BAR -->
         <nav class="bg-slate-900 border-t border-slate-800 flex justify-around py-2 px-1 shrink-0 z-40">
             <button onclick="switchTab('pov')" id="nav-pov" class="flex flex-col items-center pink-text text-[10px] font-bold">
                 <i class="fa-solid fa-hand-sparkles text-base mb-0.5"></i>
@@ -258,63 +236,10 @@
     </div>
 
     <script>
-        // --- GAME STATE ---
-        let state = {
-            debt: 50000000,
-            money: 500000,
-            rating: 1.5,
-            ratingsCount: 2,
-            health: 100,
-            level: 1, // 1 -> 5
-            day: 1,
-            dayOfWeek: 1, // 1: T2 -> 7: CN
-            bgmOn: false,
-            
-            // Dịch vụ & Giá cài đặt thực tế
-            pricing: {
-                manicure: { name: 'Sơn Móng Cơ Bản', price: 60000, suggested: 60000, maxLimit: 150000 },
-                gel: { name: 'Sơn Gel Hàn Quốc', price: 120000, suggested: 120000, maxLimit: 300000 },
-                catEye: { name: 'Sơn Mắt Mèo Kim Cương', price: 180000, suggested: 180000, maxLimit: 450000 },
-                charm: { name: 'Đính Charm Nơ 3D / Đá', price: 80000, suggested: 80000, maxLimit: 200000 }
-            },
-
-            // Danh sách sơn trong kho & Đang đặt trên bàn (Tối đa 15 lọ)
-            activePolishes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
-            polishes: Array.from({length: 30}, (_, i) => ({
-                id: i,
-                name: `Màu Sơn #${i+1}`,
-                color: ['#ff477e', '#ff85a2', '#d8b4fe', '#fde047', '#38bdf8', '#18181b', '#22c55e', '#a855f7', '#ec4899', '#f97316'][i % 10],
-                usesLeft: 45, // 45 ngón
-                isDry: false,
-                isMixed: false
-            })),
-
-            // Dung dịch tẩy rửa móng
-            acetoneUses: 30,
-
-            // Nhân viên
-            staff: [
-                { id: 1, name: 'Bé Linh (GenZ)', type: 'GenZ Sáng Tạo', salary: 4000000, errorRate: 0.15, loyalty: 80, diligence: 85 }
-            ],
-
-            // Lịch sử Đánh giá (Reviews)
-            reviews: [
-                { id: 1, name: 'Chị Mai', stars: 2, comment: 'Chờ hơi lâu nhưng chủ tiệm nhiệt tình.', redeemed: false }
-            ]
-        };
-
-        // RIDE & CLIENT STATE
-        let currentClient = null;
-        let patienceTimer = null;
-
-        // WEB AUDIO API SYNTHESIZER
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        let bgmOsc = null;
-
-        function playSound(type) {
-            try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const now = audioCtx.currentTime;
-
-                if (type === 'tingting') { // Âm thanh "Ting Ting" Chuyển khoản ngân hàng chuẩn!
-                    const osc1 = audioCtx.createOsci
+        // --- HELPER BO TRÒN CANVAS AN TOÀN CHO MỌI TRÌNH DUYỆT ---
+        function drawRoundRectSafe(ctx, x, y, width, height, radius) {
+            if (typeof radius === 'number') {
+                radius = {tl: radius, tr: radius, br: radius, bl: radius};
+            } else {
+                var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
+                for (var sideindex.html [generated with web_code_canvas tool]
